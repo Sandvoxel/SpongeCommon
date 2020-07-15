@@ -57,6 +57,9 @@
         "world.dimension.OverworldDimensionMixin",
         "world.storage.SaveHandlerMixin",
         "world.storage.WorldInfoMixin",
+
+
+        "data.CustomDataHolderMixin"
     ],
     "client": [
         "client.network.handshake.ClientHandshakeNetHandlerMixin",
