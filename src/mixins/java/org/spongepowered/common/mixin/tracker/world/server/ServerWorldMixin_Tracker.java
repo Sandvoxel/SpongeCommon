@@ -51,9 +51,11 @@ import org.spongepowered.common.SpongeImplHooks;
 import org.spongepowered.common.block.SpongeBlockSnapshot;
 import org.spongepowered.common.block.SpongeBlockSnapshotBuilder;
 import org.spongepowered.common.bridge.TimingBridge;
+import org.spongepowered.common.bridge.TrackableBridge;
 import org.spongepowered.common.bridge.entity.EntityBridge;
 import org.spongepowered.common.bridge.util.math.BlockPosBridge;
 import org.spongepowered.common.bridge.world.TrackedWorldBridge;
+import org.spongepowered.common.bridge.world.WorldBridge;
 import org.spongepowered.common.bridge.world.chunk.ChunkBridge;
 import org.spongepowered.common.bridge.world.chunk.ServerChunkProviderBridge;
 import org.spongepowered.common.event.tracking.BlockChangeFlagManager;
@@ -78,8 +80,8 @@ import java.util.function.Consumer;
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin_Tracker extends WorldMixin_Tracker implements TrackedWorldBridge {
 
-    private SpongeProxyBlockAccess tracker$proxyBlockAccess = new SpongeProxyBlockAccess(this);
-    private LinkedBlockingDeque<ScheduledBlockChange> tracker$scheduledChanges = new LinkedBlockingDeque<>();
+    private final SpongeProxyBlockAccess tracker$proxyBlockAccess = new SpongeProxyBlockAccess(this);
+    private final LinkedBlockingDeque<ScheduledBlockChange> tracker$scheduledChanges = new LinkedBlockingDeque<>();
 
     @Override
     public SpongeProxyBlockAccess bridge$getProxyAccess() {
@@ -90,16 +92,16 @@ public abstract class ServerWorldMixin_Tracker extends WorldMixin_Tracker implem
     @Shadow public abstract ServerChunkProvider shadow$getChunkProvider();
 
     @Inject(method = "onEntityAdded", at = @At("TAIL"))
-    private void onEntityAddedToWorldMarkAsTracked(final net.minecraft.entity.Entity entityIn, final CallbackInfo ci) {
+    private void tracker$setEntityTrackedInWorld(final net.minecraft.entity.Entity entityIn, final CallbackInfo ci) {
         if (!this.bridge$isFake()) { // Only set the value if the entity is not fake
-            ((EntityBridge) entityIn).bridge$setWorldTracked(true);
+            ((TrackableBridge) entityIn).bridge$setWorldTracked(true);
         }
     }
 
     @Inject(method = "onEntityRemoved", at = @At("TAIL"))
-    private void onEntityRemovedFromWorldMarkAsUntracked(final net.minecraft.entity.Entity entityIn, final CallbackInfo ci) {
-        if (!this.bridge$isFake() || ((EntityBridge) entityIn).bridge$isWorldTracked()) {
-            ((EntityBridge) entityIn).bridge$setWorldTracked(false);
+    private void tracker$setEntityUntrackedInWorld(final net.minecraft.entity.Entity entityIn, final CallbackInfo ci) {
+        if (!this.bridge$isFake() || ((TrackableBridge) entityIn).bridge$isWorldTracked()) {
+            ((TrackableBridge) entityIn).bridge$setWorldTracked(false);
         }
     }
 
@@ -135,8 +137,8 @@ public abstract class ServerWorldMixin_Tracker extends WorldMixin_Tracker implem
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/server/ServerWorld;guardEntityTick(Ljava/util/function/Consumer;Lnet/minecraft/entity/Entity;)V"),
             slice = @Slice(
-                    from = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/profiler/IProfiler;startSection(Ljava/lang/String;)V", args = "stringValue=tick"),
-                    to = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/profiler/IProfiler;startSection(Ljava/lang/String;)V", args = "stringValue=remove")
+                    from = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/profiler/IProfiler;startSection(Ljava/lang/String;)V", args = "ldc=tick"),
+                    to = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/profiler/IProfiler;startSection(Ljava/lang/String;)V", args = "ldc=remove")
             )
     )
     private void tracker$wrapNormalEntityTick(final ServerWorld serverWorld, final Consumer<Entity> entityUpdateConsumer, final Entity entity) {
@@ -150,7 +152,7 @@ public abstract class ServerWorldMixin_Tracker extends WorldMixin_Tracker implem
 
 
     @Override
-    protected void impl$wrapTileEntityTick(final ITickableTileEntity tileEntity) {
+    protected void tracker$wrapTileEntityTick(final ITickableTileEntity tileEntity) {
         if (!SpongeImplHooks.shouldTickTile(tileEntity)) {
             return;
         }
@@ -179,7 +181,7 @@ public abstract class ServerWorldMixin_Tracker extends WorldMixin_Tracker implem
     @Redirect(method = "tickBlock",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/block/BlockState;tick(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V"))
-    private void impl$wrapBlockTick(final BlockState blockState, final World worldIn, final BlockPos pos, final Random random) {
+    private void tracker$wrapBlockTick(final BlockState blockState, final World worldIn, final BlockPos pos, final Random random) {
         final PhaseContext<?> currentContext = PhaseTracker.SERVER.getPhaseContext();
         final IPhaseState currentState = currentContext.state;
         if (currentState.alreadyCapturingBlockTicks(currentContext) || currentState.ignoresBlockUpdateTick(currentContext)) {
@@ -205,7 +207,7 @@ public abstract class ServerWorldMixin_Tracker extends WorldMixin_Tracker implem
     @Redirect(method = "tickEnvironment",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/block/BlockState;randomTick(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V"))
-    private void impl$wrapBlockRandomTick(final BlockState blockState, final World worldIn, final BlockPos pos, final Random random) {
+    private void tracker$wrapBlockRandomTick(final BlockState blockState, final World worldIn, final BlockPos pos, final Random random) {
         try (final Timing timing = ((TimingBridge) blockState.getBlock()).bridge$getTimingsHandler()) {
             timing.startTiming();
             final PhaseContext<?> context = PhaseTracker.getInstance().getPhaseContext();
@@ -219,96 +221,6 @@ public abstract class ServerWorldMixin_Tracker extends WorldMixin_Tracker implem
     }
 
     /**
-     * @author gabizou - January 18th, 2020 - Minecraft 1.14.3
-     * You're probably wondering why we're doing this... Well... Take a seat and grab a cup of coffee...
-     */
-    @SuppressWarnings("unused")
-    @Inject(method = "tick",
-            at = @At(value = "INVOKE",target = "Lnet/minecraft/world/ServerTickList;tick()V"),
-            slice = @Slice(
-                    from = @At(value = "FIELD",
-                            target = "Lnet/minecraft/world/server/ServerWorld;pendingBlockTicks:Lnet/minecraft/world/ServerTickList;"),
-                    to = @At(value = "FIELD",
-                            target = "Lnet/minecraft/world/server/ServerWorld;pendingFluidTicks:Lnet/minecraft/world/ServerTickList;")
-            )
-    )
-    private void tracker$dumpAsyncScheduledBlockChanges(final BooleanSupplier hasTimeLeft, final CallbackInfo ci) {
-        // Grab the pending block changes from
-        final ScheduledBlockChange tail = this.tracker$scheduledChanges.peekLast();
-        if (tail == null) {
-            return;
-        }
-        /*
-        You remember being told to get a cup of coffee, here's why...
-        Because we have the "tail" end of where we want to stop processing block changes,
-        asynchronous threads can keep pushing new changes onto the dequeue, // Btw, Faith says "putting, not pushing" // Morph also says "offering" probably with a "key"
-        but we basically want to put a "stop" to say "Hey, your new changes are too late, they'll be processed later."
-        So, to do this, we have to iterate for the first elements up to the tail, while also checking that the queue
-        is basically empty after we've processed the most recently polled element.
-
-        Also, because BlockingDequeue does wait for populating, we have to check for peekFirst at the end of the block
-        to avoid waiting for the next pollFirst.
-
-         */
-        for (ScheduledBlockChange blockChange = this.tracker$scheduledChanges.pollFirst();
-             blockChange != null && this.tracker$scheduledChanges.peekFirst() != tail;
-             blockChange = this.tracker$scheduledChanges.pollFirst()) {
-            try (final PhaseContext<?> context = blockChange.context.buildAndSwitch()) {
-                PhaseTracker.SERVER.setBlockState(this, blockChange.pos, blockChange.state, blockChange.flag);
-            }
-            // We must check that the dequeue doesn't have any remaining elements because if it is empty
-            // after we polled, the poll will literally wait until the dequeue has new elements....
-            if (this.tracker$scheduledChanges.peekFirst() == null) {
-                break;
-            }
-        }
-    }
-
-
-
-    /**
-     * @author gabizou - August 4th, 2016
-     * @author blood - May 11th, 2017 - Forces chunk requests if TE is ticking.
-     * @reason Rewrites the check to be inlined to {@link BlockPosBridge}.
-     *
-     * @param pos The position
-     * @return The block state at the desired position
-     */
-    @Override
-    public net.minecraft.block.BlockState getBlockState(final BlockPos pos) {
-        // Sponge - Replace with inlined method
-        // if (this.isOutsideBuildHeight(pos)) // Vanilla
-        if (((BlockPosBridge) pos).bridge$isInvalidYPosition()) {
-            // Sponge end
-            return Blocks.AIR.getDefaultState();
-        }
-        // ExtraUtilities 2 expects to get the proper chunk while mining or it gets stuck in infinite loop
-        // TODO add TE config to disable/enable chunk loads
-        final boolean forceChunkRequests = ((ServerChunkProviderBridge) this.shadow$getChunkProvider()).bridge$getForceChunkRequests();
-        final PhaseTracker phaseTracker = PhaseTracker.getInstance();
-        final IPhaseState<?> currentState = phaseTracker.getCurrentState();
-        final boolean entered = currentState == TickPhase.Tick.TILE_ENTITY;
-        if (entered) {
-            ((ServerChunkProviderBridge) this.shadow$getChunkProvider()).bridge$setForceChunkRequests(true);
-        }
-        try {
-            // Proxies have block changes for bulk special captures
-            final net.minecraft.block.BlockState blockState = this.tracker$proxyBlockAccess.getBlockState(pos);
-            if (blockState != null) {
-                return blockState;
-            }
-            final IChunk chunk= this.shadow$getChunkAt(pos);
-            return chunk.getBlockState(pos);
-        } finally {
-            if (entered) {
-                ((ServerChunkProviderBridge) this.shadow$getChunkProvider()).bridge$setForceChunkRequests(forceChunkRequests);
-            }
-        }
-    }
-
-
-
-    /**
      * @author gabizou, March 12th, 2016
      *
      * Move this into WorldServer as we should not be modifying the client world.
@@ -317,13 +229,16 @@ public abstract class ServerWorldMixin_Tracker extends WorldMixin_Tracker implem
      */
     @Override
     public boolean setBlockState(final BlockPos pos, final net.minecraft.block.BlockState newState, final int flags) {
-        if (!WorldMixin_Tracker.shadow$isOutsideBuildHeight(pos)) {
+        if (World.isOutsideBuildHeight(pos)) {
             return false;
         } else if (this.worldInfo.getGenerator() == WorldType.DEBUG_ALL_BLOCK_STATES) { // isRemote is always false since this is WorldServer
             return false;
         } else {
             // Sponge - reroute to the PhaseTracker
-            return PhaseTracker.getInstance().setBlockState(this, pos.toImmutable(), newState, BlockChangeFlagManager.fromNativeInt(flags));
+            if (this.bridge$isFake()) {
+                return super.setBlockState(pos, newState, flags);
+            }
+            return PhaseTracker.SERVER.setBlockState(this, pos.toImmutable(), newState, BlockChangeFlagManager.fromNativeInt(flags));
         }
     }
 

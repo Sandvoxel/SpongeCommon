@@ -40,6 +40,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.server.ServerWorld;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.event.CauseStackManager;
@@ -86,6 +89,7 @@ import java.util.function.Predicate;
  * where preventing switching to another state is possible (likely points out
  * either errors or runaway states not being unwound).
  */
+@DefaultQualifier(NonNull.class)
 public interface IPhaseState<C extends PhaseContext<C>> {
 
     BiConsumer<CauseStackManager.StackFrame, ? extends PhaseContext<?>> DEFAULT_OWNER_NOTIFIER = (frame, ctx) -> {
@@ -808,20 +812,14 @@ public interface IPhaseState<C extends PhaseContext<C>> {
      * such that the change of a {@link BlockState} will be appropriately logged, along with any changes of tile entities being removed
      * or added, likewise, this will avoid duplicating transactions later after the fact, in the event that multiple changes are taking
      * place, including but not withstanding, tile entity replacements after the fact.
+     * @return
      */
-    @Nullable
-    default BlockTransaction.ChangeBlock captureBlockChange(final C phaseContext, final BlockPos pos, final SpongeBlockSnapshot originalBlockSnapshot,
+    default org.spongepowered.common.event.tracking.context.transaction.BlockTransaction.ChangeBlock createTransaction(final C phaseContext, final BlockPos pos, final SpongeBlockSnapshot originalBlockSnapshot,
         final BlockState newState, final BlockChangeFlag flags, @Nullable final TileEntity tileEntity) {
-        if (!this.doesBulkBlockCapture(phaseContext)) {
-            phaseContext.setSingleSnapshot(originalBlockSnapshot);
-            return null;
-        }
-        if (this.hasSpecificBlockProcess(phaseContext)) {
-            return phaseContext.getCapturedBlockSupplier().logBlockChange(originalBlockSnapshot, newState, flags);
-        }
-        phaseContext.getCapturedBlockSupplier().put(originalBlockSnapshot, newState);
-        return null;
+        final org.spongepowered.common.event.tracking.context.transaction.BlockTransaction.ChangeBlock changeBlock = phaseContext.getBlockTransactor()
+            .logBlockChange(originalBlockSnapshot, newState, flags);
 
+        return changeBlock;
     }
 
     default boolean tracksTileEntityChanges(final C currentContext) {

@@ -442,6 +442,8 @@ public final class VanillaWorldManager implements SpongeWorldManager {
                 }
             }
 
+            this.server.setDifficultyForAllWorlds(worldInfo.getDifficulty(), true);
+
             SpongeCommon.postEvent(SpongeEventFactory.createLoadWorldEvent(
                 PhaseTracker.getCauseStackManager().getCurrentCause(),
                 (org.spongepowered.api.world.server.ServerWorld) serverWorld));

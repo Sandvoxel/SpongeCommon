@@ -37,6 +37,7 @@ import org.spongepowered.api.world.BlockChangeFlag;
 import org.spongepowered.common.SpongeCommon;
 import org.spongepowered.common.block.SpongeBlockSnapshot;
 import org.spongepowered.common.bridge.tileentity.TileEntityBridge;
+import org.spongepowered.common.bridge.tileentity.TrackableTileEntityBridge;
 import org.spongepowered.common.bridge.world.ServerWorldBridge;
 import org.spongepowered.common.bridge.world.TrackedWorldBridge;
 import org.spongepowered.common.event.tracking.IPhaseState;
@@ -60,12 +61,16 @@ public abstract class BlockTransaction {
     final int snapshotIndex;
     boolean isCancelled = false;
     boolean appliedPreChange;
+    // State defintions
     final BlockPos affectedPosition;
     final BlockState originalState;
     @Nullable Map<BlockPos, TileEntity> tilesAtTransaction;
     @Nullable Map<BlockPos, BlockState> blocksNotAffected;
+
+    // LinkedList node defintions
     @Nullable BlockTransaction previous;
     @Nullable BlockTransaction next;
+
 
     BlockTransaction(final int i, final int snapshotIndex, final BlockPos affectedPosition, final BlockState originalState) {
         this.transactionIndex = i;
@@ -121,7 +126,6 @@ public abstract class BlockTransaction {
         supplier.queuePreviousStates(this);
     }
 
-    @Nullable
     public SpongeProxyBlockAccess.Proxy getProxy(final TrackedWorldBridge mixinWorldServer) {
         return null;
     }
@@ -181,7 +185,7 @@ public abstract class BlockTransaction {
             final SpongeProxyBlockAccess proxyAccess = ((TrackedWorldBridge) worldServer).bridge$getProxyAccess();
             final BlockPos targetPos = this.addedSnapshot.getBlockPos();
             proxyAccess.proceedWithAdd(targetPos, this.added);
-            ((TileEntityBridge) this.added).bridge$setCaptured(false);
+            ((TrackableTileEntityBridge) this.added).bridge$setCaptured(false);
         }
 
         @Override
@@ -258,7 +262,7 @@ public abstract class BlockTransaction {
             }
             final ServerWorld worldServer = maybeWorld.get();
             final SpongeProxyBlockAccess proxyAccess = ((TrackedWorldBridge) worldServer).bridge$getProxyAccess();
-            ((TileEntityBridge) this.removed).bridge$setCaptured(false); // Disable the capture logic in other places.
+            ((TrackableTileEntityBridge) this.removed).bridge$setCaptured(false); // Disable the capture logic in other places.
             proxyAccess.proceedWithRemoval(targetPosition, this.removed);
             // Reset captured state since we want it to be removed
             worldServer.updateComparatorOutputLevel(targetPosition, worldServer.getBlockState(targetPosition).getBlock());
@@ -329,9 +333,9 @@ public abstract class BlockTransaction {
             final TrackedWorldBridge trackedWorld = (TrackedWorldBridge) this.added.getWorld();
             final BlockPos position = this.added.getPos();
             final SpongeProxyBlockAccess proxyAccess = trackedWorld.bridge$getProxyAccess();
-            ((TileEntityBridge) this.removed).bridge$setCaptured(false);
+            ((TrackableTileEntityBridge) this.removed).bridge$setCaptured(false);
             proxyAccess.proceedWithRemoval(position, this.removed);
-            ((TileEntityBridge) this.added).bridge$setCaptured(false);
+            ((TrackableTileEntityBridge) this.added).bridge$setCaptured(false);
             proxyAccess.proceedWithAdd(position, this.added);
         }
 

@@ -42,12 +42,14 @@ import org.spongepowered.api.registry.FactoryRegistry;
 import org.spongepowered.api.registry.UnknownTypeException;
 import org.spongepowered.api.resourcepack.ResourcePack;
 import org.spongepowered.api.util.Transform;
+import org.spongepowered.api.world.BlockChangeFlag;
 import org.spongepowered.common.adventure.AudienceFactory;
 import org.spongepowered.common.adventure.SpongeAdventure;
 import org.spongepowered.api.world.ServerLocation;
 import org.spongepowered.common.command.parameter.SpongeParameterValueFactory;
 import org.spongepowered.common.command.parameter.managed.factory.SpongeVariableValueParameterBuilderFactory;
 import org.spongepowered.common.command.registrar.tree.SpongeRootCommandTreeBuilderFactory;
+import org.spongepowered.common.event.tracking.BlockChangeFlagManager;
 import org.spongepowered.common.item.SpongeItemStackSnapshot;
 import org.spongepowered.common.network.channel.SpongeChannelExceptionHandlers;
 import org.spongepowered.common.registry.type.advancement.SpongeAdvancementCriterionFactory;
@@ -109,6 +111,7 @@ public final class SpongeFactoryRegistry implements FactoryRegistry {
             .registerFactory(Transform.Factory.class, SpongeTransformFactory.INSTANCE)
             .registerFactory(VariableValueParameters.Factory.class, SpongeVariableValueParameterBuilderFactory.INSTANCE)
             .registerFactory(ChannelExceptionHandler.Factory.class, SpongeChannelExceptionHandlers.INSTANCE)
+            .registerFactory(BlockChangeFlag.Factory.class, BlockChangeFlagManager.getInstance().getFactory())
         ;
     }
 

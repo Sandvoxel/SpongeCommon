@@ -34,11 +34,14 @@ import net.minecraft.command.Commands;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.management.PlayerProfileCache;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.WorldType;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.listener.IChunkStatusListenerFactory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -81,8 +84,20 @@ public abstract class IntegratedServerMixin_Vanilla extends MinecraftServer impl
         lifecycle.callStartedEngineEvent(this);
     }
 
-    @Override
+    /**
+     * @author gabizou - Minecraft 1.14.3 - July 21st, 2020
+     * @reason this temporarily allows us to join a client world with the
+     * {@link org.spongepowered.api.world.server.WorldManager} performing it's
+     * necessary steps to create our world infos.
+     */
+    @Overwrite
     public void loadAllWorlds(String saveName, String worldNameIn, long seed, WorldType type, JsonElement generatorOptions) {
-        this.getWorldManager().loadAllWorlds(saveName, worldNameIn, seed, type, generatorOptions, true, this.worldSettings, this.mc.gameSettings.difficulty);
+        this.setUserMessage(new TranslationTextComponent("menu.loadingLevel"));
+        this.getWorldManager().loadAllWorlds(saveName, worldNameIn, seed, type, generatorOptions);
     }
+
+//    @Override
+//    public void loadAllWorlds(String saveName, String worldNameIn, long seed, WorldType type, JsonElement generatorOptions) {
+//        this.getWorldManager().loadAllWorlds(saveName, worldNameIn, seed, type, generatorOptions, true, this.worldSettings, this.mc.gameSettings.difficulty);
+//    }
 }

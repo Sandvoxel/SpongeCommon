@@ -44,8 +44,10 @@ import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.world.BlockChangeFlag;
 import org.spongepowered.api.world.BlockChangeFlags;
+import org.spongepowered.common.bridge.tileentity.TrackableTileEntityBridge;
 import org.spongepowered.common.bridge.world.chunk.TrackedChunkBridge;
 import org.spongepowered.common.event.tracking.PhasePrinter;
+import org.spongepowered.common.event.tracking.context.transaction.ResultingTransactionBySideEffect;
 import org.spongepowered.common.util.PrettyPrinter;
 import org.spongepowered.common.block.SpongeBlockSnapshot;
 import org.spongepowered.common.block.SpongeBlockSnapshotBuilder;
@@ -475,7 +477,7 @@ public final class MultiBlockCaptureSupplier implements ICaptureSupplier {
                     if (isSame) {
                         changeBlock.ignoreBreakBlockLogic = true;
                         changeBlock.queuedRemoval = null;
-                        ((TileEntityBridge) newTile).bridge$setCaptured(false);
+                        ((TrackableTileEntityBridge) newTile).bridge$setCaptured(false);
                         break;
                     }
                 }
