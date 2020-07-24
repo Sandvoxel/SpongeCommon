@@ -62,11 +62,13 @@ import org.spongepowered.common.bridge.data.VanishableBridge;
 import org.spongepowered.common.bridge.entity.ForgeEntityBridge;
 import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
 import org.spongepowered.common.bridge.world.dimension.DimensionBridge;
+import org.spongepowered.common.event.ModEventHooks;
 import org.spongepowered.common.event.SpongeCommonEventFactory;
 import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.PhaseTracker;
 import org.spongepowered.common.item.util.ItemStackUtil;
+import org.spongepowered.common.network.ModPacketHooks;
 import org.spongepowered.math.vector.Vector3d;
 
 import javax.annotation.Nullable;
@@ -201,7 +203,7 @@ public final class EntityUtil {
 
         player.dimension = dimensionType;
         WorldInfo worldinfo = toWorld.getWorldInfo();
-        // TODO Minecraft 1.14 - Forge needs their dimension data send down at this spot
+        ModPacketHooks.sendDimensionData(player.connection.netManager, player);
         player.connection.sendPacket(new SRespawnPacket(dimensionType, worldinfo.getGenerator(), player.interactionManager.getGameType()));
         player.connection.sendPacket(new SServerDifficultyPacket(worldinfo.getDifficulty(), worldinfo.isDifficultyLocked()));
         PlayerList playerlist = player.getServer().getPlayerList();
@@ -209,6 +211,8 @@ public final class EntityUtil {
         fromWorld.removePlayer(player);
         // invalidate call.
         ((ForgeEntityBridge) player).revive();
+
+        ModEventHooks.firePlayerChangedDimensionEvent(player, fromDimensionType, toWorld.dimension.getType());
 
         return player;
     }
