@@ -51,6 +51,7 @@ import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
 import org.spongepowered.common.bridge.data.InvulnerableTrackedBridge;
 import org.spongepowered.common.bridge.data.VanishableBridge;
 import org.spongepowered.common.bridge.entity.EntityBridge;
+import org.spongepowered.common.bridge.entity.ForgeEntityBridge;
 import org.spongepowered.common.bridge.entity.GrieferBridge;
 import org.spongepowered.common.data.SpongeDataManager;
 import org.spongepowered.common.util.Constants;
@@ -59,8 +60,8 @@ import java.util.List;
 import java.util.Random;
 
 @Mixin(Entity.class)
-public abstract class EntityMixin implements EntityBridge, TrackableBridge, VanishableBridge, InvulnerableTrackedBridge, TimingBridge,
-        CommandSourceProviderBridge {
+public abstract class EntityMixin implements EntityBridge, ForgeEntityBridge, TrackableBridge, VanishableBridge, InvulnerableTrackedBridge,
+        TimingBridge, CommandSourceProviderBridge {
 
     // @formatter:off
     @Shadow @Nullable private Entity ridingEntity;
