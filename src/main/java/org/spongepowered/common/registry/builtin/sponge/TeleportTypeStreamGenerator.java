@@ -22,25 +22,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.accessor.entity.player;
+package org.spongepowered.common.registry.builtin.sponge;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.api.ResourceKey;
+import org.spongepowered.api.event.cause.entity.teleport.TeleportType;
+import org.spongepowered.common.data.type.SpongeTeleportType;
 
-@Mixin(ServerPlayerEntity.class)
-public interface ServerPlayerEntityAccessor {
+import java.util.stream.Stream;
 
-    @Accessor("invulnerableDimensionChange") void accessor$setInvulnerableDimensionChange(boolean invulnerableDimensionChange);
+public final class TeleportTypeStreamGenerator {
 
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
+    private TeleportTypeStreamGenerator() {
+    }
 
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean seenCredits);
-
-    @Accessor("enteredNetherPosition") Vec3d accessor$getEnteredNetherPosition();
-
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
-
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean value);
+    public static Stream<TeleportType> stream() {
+        return Stream.of(
+                new SpongeTeleportType(ResourceKey.sponge("command")),
+                new SpongeTeleportType(ResourceKey.sponge("entity_teleport")),
+                new SpongeTeleportType(ResourceKey.sponge("plugin")),
+                new SpongeTeleportType(ResourceKey.sponge("portal")),
+                new SpongeTeleportType(ResourceKey.sponge("unknown"))
+        );
+    }
 }

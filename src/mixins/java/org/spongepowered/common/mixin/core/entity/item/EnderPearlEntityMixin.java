@@ -30,7 +30,6 @@ import net.minecraft.entity.item.EnderPearlEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.dimension.DimensionType;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.event.cause.EventContextKeys;
@@ -74,7 +73,7 @@ public abstract class EnderPearlEntityMixin extends ThrowableEntityMixin {
             frame.addContext(EventContextKeys.TELEPORT_TYPE, TeleportTypes.ENTITY_TELEPORT);
             frame.addContext(EventContextKeys.PROJECTILE_SOURCE, (Player) player);
 
-            final MoveEntityEvent.Teleport event = EntityUtil.handleDisplaceEntityTeleportEvent(player, ((org.spongepowered.api.entity.Entity) this).getServerLocation());
+            final MoveEntityEvent.Teleport event = EntityUtil.postDisplaceEntityTeleportEvent(player, ((org.spongepowered.api.entity.Entity) this).getServerLocation());
             if (event.isCancelled()) {
                 return true;
             }

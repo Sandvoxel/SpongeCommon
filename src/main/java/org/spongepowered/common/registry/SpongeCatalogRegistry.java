@@ -122,6 +122,7 @@ import org.spongepowered.api.event.cause.EventContextKey;
 import org.spongepowered.api.event.cause.entity.damage.DamageType;
 import org.spongepowered.api.event.cause.entity.dismount.DismountType;
 import org.spongepowered.api.event.cause.entity.spawn.SpawnType;
+import org.spongepowered.api.event.cause.entity.teleport.TeleportType;
 import org.spongepowered.api.fluid.FluidType;
 import org.spongepowered.api.item.enchantment.EnchantmentType;
 import org.spongepowered.api.item.inventory.ContainerType;
@@ -177,6 +178,7 @@ import org.spongepowered.common.registry.builtin.sponge.QueryTypeStreamGenerator
 import org.spongepowered.common.registry.builtin.sponge.RabbitTypeStreamGenerator;
 import org.spongepowered.common.registry.builtin.sponge.SerializationBehaviorStreamGenerator;
 import org.spongepowered.common.registry.builtin.sponge.SpawnTypeStreamGenerator;
+import org.spongepowered.common.registry.builtin.sponge.TeleportTypeStreamGenerator;
 import org.spongepowered.common.registry.builtin.sponge.WoodTypeStreamGenerator;
 import org.spongepowered.common.registry.builtin.vanilla.BiomeSupplier;
 import org.spongepowered.common.registry.builtin.vanilla.BlockSupplier;
@@ -515,6 +517,7 @@ public final class SpongeCatalogRegistry implements CatalogRegistry {
             .generateRegistry(SpellType.class, ResourceKey.minecraft("spell_type"), Arrays.stream(SpellcastingIllagerEntity.SpellType.values()), true, false)
             .generateRegistry(StairShape.class, ResourceKey.minecraft("stair_shape"), Arrays.stream(StairsShape.values()), true, false)
             .generateRegistry(StructureMode.class, ResourceKey.minecraft("structure_mode"), Arrays.stream(net.minecraft.state.properties.StructureMode.values()), true, false)
+            .generateRegistry(TeleportType.class, ResourceKey.sponge("teleport_type"), TeleportTypeStreamGenerator.stream(), true, true)
             .generateRegistry(ToolType.class, ResourceKey.minecraft("tool_type"), Arrays.stream(ItemTier.values()), true, false)
             .generateRegistry(TropicalFishShape.class, ResourceKey.minecraft("tropical_fish_shape"), Arrays.stream(TropicalFishEntity.Type.values()), true, false)
             .generateRegistry(WireAttachmentType.class, ResourceKey.minecraft("wire_attachment_type"), Arrays.stream(RedstoneSide.values()), true, false)

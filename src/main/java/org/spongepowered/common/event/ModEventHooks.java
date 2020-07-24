@@ -22,25 +22,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.accessor.entity.player;
+package org.spongepowered.common.event;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.dimension.DimensionType;
 
-@Mixin(ServerPlayerEntity.class)
-public interface ServerPlayerEntityAccessor {
+/**
+ * Static methods for events where Forge would have called them in common code we overwrite of Forge's.
+ *
+ * Only to be used if there is no equivalent Sponge event for the particular Forge event
+ *
+ * It is expected that SpongeForge (or another implementation) will overwrite these methods to call their specific event
+ */
+public final class ModEventHooks {
 
-    @Accessor("invulnerableDimensionChange") void accessor$setInvulnerableDimensionChange(boolean invulnerableDimensionChange);
-
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
-
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean seenCredits);
-
-    @Accessor("enteredNetherPosition") Vec3d accessor$getEnteredNetherPosition();
-
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
-
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean value);
+    public static void firePlayerChangedDimensionEvent(final PlayerEntity player, final DimensionType fromDimensionType,
+            final DimensionType toDimensionType) {
+    }
 }

@@ -22,6 +22,8 @@
         "network.login.ServerLoginNetHandler_2Mixin_Vanilla",
         "network.login.ServerLoginNetHandlerMixin_Vanilla",
         "network.play.ServerPlayNetHandlerMixin_Vanilla",
+        "entity.EntityMixin_Vanilla",
+        "entity.player.ServerPlayerEntityMixin_Vanilla",
         "server.MinecraftServerMixin_Vanilla",
         "util.registry.BootstrapMixin_Vanilla",
         "world.server.ServerChunkProviderMixin_Vanilla"

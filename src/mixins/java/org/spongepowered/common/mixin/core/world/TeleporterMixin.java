@@ -22,25 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.accessor.entity.player;
+package org.spongepowered.common.mixin.core.world;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Teleporter;
+import net.minecraft.world.server.ServerWorld;
+import org.spongepowered.api.world.teleport.PortalAgentType;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.common.bridge.world.TeleporterBridge;
+import org.spongepowered.common.registry.builtin.sponge.PortalAgentTypeStreamGenerator;
 
-@Mixin(ServerPlayerEntity.class)
-public interface ServerPlayerEntityAccessor {
+@Mixin(Teleporter.class)
+public abstract class TeleporterMixin implements TeleporterBridge {
 
-    @Accessor("invulnerableDimensionChange") void accessor$setInvulnerableDimensionChange(boolean invulnerableDimensionChange);
+    private PortalAgentType impl$portalAgentType;
 
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void impl$setPortalAgentType(ServerWorld worldIn, CallbackInfo ci) {
+        this.impl$portalAgentType = PortalAgentTypeStreamGenerator.find(worldIn);
+    }
 
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean seenCredits);
-
-    @Accessor("enteredNetherPosition") Vec3d accessor$getEnteredNetherPosition();
-
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
-
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean value);
+    @Override
+    public PortalAgentType bridge$getPortalAgentType() {
+        return this.impl$portalAgentType;
+    }
 }

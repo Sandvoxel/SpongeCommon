@@ -25,6 +25,9 @@
 package org.spongepowered.common.registry.builtin.sponge;
 
 import net.minecraft.world.Teleporter;
+import net.minecraft.world.dimension.EndDimension;
+import net.minecraft.world.dimension.NetherDimension;
+import net.minecraft.world.server.ServerWorld;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.world.teleport.PortalAgentType;
 import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
@@ -34,13 +37,25 @@ import java.util.stream.Stream;
 
 public final class PortalAgentTypeStreamGenerator {
 
+    private static final PortalAgentType THE_END = new SpongePortalAgentType(ResourceKey.minecraft("default_the_end"), (Class<ForgeITeleporterBridge>) (Object) Teleporter.class);
+    private static final PortalAgentType THE_NETHER = new SpongePortalAgentType(ResourceKey.minecraft("default_the_nether"), (Class<ForgeITeleporterBridge>) (Object) Teleporter.class);
+
     private PortalAgentTypeStreamGenerator() {
+    }
+
+    // TODO Minecraft 1.14 - Stop gap to get Vanilla portals working, does need a lot of thought...
+    public static PortalAgentType find(final ServerWorld world) {
+        if (world.dimension instanceof EndDimension) {
+            return PortalAgentTypeStreamGenerator.THE_END;
+        }
+
+        return PortalAgentTypeStreamGenerator.THE_NETHER;
     }
 
     public static Stream<PortalAgentType> stream() {
         return Stream.of(
-                new SpongePortalAgentType(ResourceKey.minecraft("default_the_nether"), (Class<ForgeITeleporterBridge>) (Object) Teleporter.class),
-                new SpongePortalAgentType(ResourceKey.minecraft("default_the_end"), (Class<ForgeITeleporterBridge>) (Object) Teleporter.class)
+                PortalAgentTypeStreamGenerator.THE_END,
+                PortalAgentTypeStreamGenerator.THE_NETHER
         );
     }
 }

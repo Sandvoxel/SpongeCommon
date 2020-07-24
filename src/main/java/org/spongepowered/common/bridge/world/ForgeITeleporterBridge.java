@@ -27,18 +27,28 @@ package org.spongepowered.common.bridge.world;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+
+import java.util.function.Function;
 
 /**
  * Compatibility interface to handle Forge binary patching {@link Teleporter} to implement their ITeleporter
  */
 public interface ForgeITeleporterBridge {
 
-    // Copied from Forge to match their teleporter methods, this allows
-    // the forge mod provided teleporters to still work with common
-    // code.
-    void bridge$placeEntity(World world, Entity entity, float yaw);
+    ForgeITeleporterBridge NO_PORTAL = new ForgeITeleporterBridge() {
+        @Override
+        public Entity bridge$placeEntity(Entity entity, ServerWorld currentWorld, ServerWorld destWorld, float yaw,
+                Function<Boolean, Entity> repositionEntity) {
+            return repositionEntity.apply(false);
+        }
+    };
 
-    // used internally to handle vanilla hardcoding
+    default Entity bridge$placeEntity(Entity entity, ServerWorld currentWorld, ServerWorld destWorld, float yaw,
+            Function<Boolean, Entity> repositionEntity) {
+        return repositionEntity.apply(true);
+    }
+
     default boolean bridge$isVanilla() {
         return this.getClass().equals(Teleporter.class);
     }

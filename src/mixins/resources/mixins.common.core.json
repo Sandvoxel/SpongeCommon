@@ -40,6 +40,7 @@
         "util.text.TranslationTextComponentMixin",
         "world.BossInfoMixin",
         "world.ServerBossInfoMixin",
+        "world.TeleporterMixin",
         "world.WorldSettingsMixin",
         "world.dimension.EndDimensionMixin",
         "world.dimension.DimensionMixin",
@@ -47,7 +48,7 @@
         "world.dimension.NetherDimensionMixin",
         "world.dimension.OverworldDimensionMixin",
         "world.storage.SaveHandlerMixin",
-        "world.storage.WorldInfoMixin",
+        "world.storage.WorldInfoMixin"
     ],
     "client": [
         "client.network.handshake.ClientHandshakeNetHandlerMixin",

@@ -28,11 +28,5 @@ import org.spongepowered.api.world.teleport.PortalAgentType;
 
 public interface TeleporterBridge extends ForgeITeleporterBridge {
 
-    void bridge$removePortalPositionFromCache(Long portalLocation);
-
-    void bridge$setPortalAgentType(PortalAgentType type);
-
-    void bridge$setNetherPortalType(boolean isNetherPortal);
-
     PortalAgentType bridge$getPortalAgentType();
 }

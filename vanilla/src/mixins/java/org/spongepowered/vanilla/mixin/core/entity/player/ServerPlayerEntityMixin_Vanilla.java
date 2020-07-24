@@ -22,44 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.server;
+package org.spongepowered.vanilla.mixin.core.entity.player;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
-import org.spongepowered.api.ResourceKey;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
+import org.spongepowered.common.entity.EntityUtil;
 
 import javax.annotation.Nullable;
 
-public final class SpongeWorldRegistrationBuilder implements WorldRegistration.Builder {
+@Mixin(ServerPlayerEntity.class)
+public abstract class ServerPlayerEntityMixin_Vanilla {
 
-    @Nullable private ResourceKey key;
-    @Nullable private String directoryName;
+    @Shadow public abstract ServerWorld getServerWorld();
 
-    @Override
-    public WorldRegistration.Builder key(ResourceKey key) {
-        this.key = checkNotNull(key);
-        return this;
-    }
-
-    @Override
-    public WorldRegistration.Builder directoryName(String name) {
-        this.directoryName = checkNotNull(name);
-        return this;
-    }
-
-    @Override
-    public WorldRegistration.Builder reset() {
-        this.directoryName = "World A";
-        return this;
-    }
-
-    @Override
-    public WorldRegistration build() throws IllegalStateException {
-        checkNotNull(this.key);
-        checkNotNull(this.directoryName);
-        checkState(!this.directoryName.isEmpty(), "Directory name cannot be empty!");
-
-        return new WorldRegistration(this.key, this.directoryName);
+    /**
+     * @author Zidane
+     * @reason Call to EntityUtil to handle dimension changes
+     */
+    @Nullable
+    @Overwrite
+    public Entity changeDimension(DimensionType dimensionType) {
+        return EntityUtil.changeDimension((ServerPlayerEntity) (Object) this, dimensionType, (ForgeITeleporterBridge) this.getServerWorld().getServer().getWorld(dimensionType).getDefaultTeleporter());
     }
 }

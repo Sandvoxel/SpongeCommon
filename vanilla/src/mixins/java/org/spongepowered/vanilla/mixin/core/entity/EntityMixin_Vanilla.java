@@ -22,25 +22,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.accessor.entity.player;
+package org.spongepowered.vanilla.mixin.core.entity;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.entity.Entity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
+import org.spongepowered.common.entity.EntityUtil;
 
-@Mixin(ServerPlayerEntity.class)
-public interface ServerPlayerEntityAccessor {
+import javax.annotation.Nullable;
 
-    @Accessor("invulnerableDimensionChange") void accessor$setInvulnerableDimensionChange(boolean invulnerableDimensionChange);
+@Mixin(Entity.class)
+public abstract class EntityMixin_Vanilla {
 
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
+    @Shadow public boolean removed;
 
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean seenCredits);
+    @Shadow public abstract World shadow$getEntityWorld();
+    @Shadow @Nullable public abstract MinecraftServer shadow$getServer();
 
-    @Accessor("enteredNetherPosition") Vec3d accessor$getEnteredNetherPosition();
+    /**
+     * @author Zidane
+     * @reason Call to EntityUtil to handle dimension changes
+     */
+    @Nullable
+    @Overwrite
+    public Entity changeDimension(DimensionType destination) {
+        if (this.shadow$getEntityWorld().isRemote || this.removed) {
+            return null;
+        }
 
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
-
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean value);
+        return EntityUtil.changeDimension((Entity) (Object) this, destination, (ForgeITeleporterBridge) this.shadow$getServer().getWorld(destination).getDefaultTeleporter());
+    }
 }

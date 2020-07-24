@@ -22,25 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.accessor.entity.player;
+package org.spongepowered.common.bridge.entity;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import net.minecraft.entity.Entity;
 
-@Mixin(ServerPlayerEntity.class)
-public interface ServerPlayerEntityAccessor {
+// Bridge methods that Forge adds and we need to call in common code. Generally defaults to Vanilla spec
+public interface ForgeEntityBridge {
 
-    @Accessor("invulnerableDimensionChange") void accessor$setInvulnerableDimensionChange(boolean invulnerableDimensionChange);
+    default void revive() {
+        ((Entity) this).removed = false;
+    }
 
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
-
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean seenCredits);
-
-    @Accessor("enteredNetherPosition") Vec3d accessor$getEnteredNetherPosition();
-
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
-
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean value);
+    default void bridge$remove(boolean keepData) {
+        ((Entity) this).remove();
+    }
 }
