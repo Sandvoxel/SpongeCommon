@@ -25,20 +25,21 @@
 package org.spongepowered.common.mixin.core.world.server;
 
 import com.google.common.base.MoreObjects;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.server.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.common.bridge.world.PlatformServerWorldBridge;
 import org.spongepowered.common.bridge.world.ServerWorldBridge;
 import org.spongepowered.common.mixin.core.world.WorldMixin;
 
 @Mixin(ServerWorld.class)
-public abstract class ServerWorldMixin extends WorldMixin implements ServerWorldBridge {
+public abstract class ServerWorldMixin extends WorldMixin implements ServerWorldBridge, PlatformServerWorldBridge {
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("Name", this.worldInfo.getWorldName())
-                .add("DimensionId", this.dimension.getType().getId())
-                .add("DimensionType", ((org.spongepowered.api.world.dimension.DimensionType) (Object) this.dimension.getType()).getKey().toString())
+                .add("Name", this.shadow$getWorldInfo().getWorldName())
+                .add("DimensionType", Registry.DIMENSION_TYPE.getKey(this.shadow$getDimension().getType()))
                 .toString();
     }
 

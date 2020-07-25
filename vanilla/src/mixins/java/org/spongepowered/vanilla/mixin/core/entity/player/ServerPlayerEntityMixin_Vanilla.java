@@ -31,7 +31,7 @@ import net.minecraft.world.server.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
+import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
 import org.spongepowered.common.entity.EntityUtil;
 
 import javax.annotation.Nullable;
@@ -48,6 +48,6 @@ public abstract class ServerPlayerEntityMixin_Vanilla {
     @Nullable
     @Overwrite
     public Entity changeDimension(DimensionType dimensionType) {
-        return EntityUtil.changeDimension((ServerPlayerEntity) (Object) this, dimensionType, (ForgeITeleporterBridge) this.getServerWorld().getServer().getWorld(dimensionType).getDefaultTeleporter());
+        return EntityUtil.changeDimension((ServerPlayerEntity) (Object) this, dimensionType, (PlatformITeleporterBridge) this.getServerWorld().getServer().getWorld(dimensionType).getDefaultTeleporter());
     }
 }

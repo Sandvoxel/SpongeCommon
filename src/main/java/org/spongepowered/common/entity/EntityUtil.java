@@ -24,6 +24,7 @@
  */
 package org.spongepowered.common.entity;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.block.pattern.BlockPattern;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -32,8 +33,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SChangeGameStatePacket;
+import net.minecraft.network.play.server.SPlayEntityEffectPacket;
+import net.minecraft.network.play.server.SPlaySoundEventPacket;
+import net.minecraft.network.play.server.SPlayerAbilitiesPacket;
 import net.minecraft.network.play.server.SRespawnPacket;
 import net.minecraft.network.play.server.SServerDifficultyPacket;
+import net.minecraft.potion.EffectInstance;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -55,20 +60,21 @@ import org.spongepowered.api.util.Transform;
 import org.spongepowered.api.world.ServerLocation;
 import org.spongepowered.common.SpongeCommon;
 import org.spongepowered.common.SpongeImplHooks;
+import org.spongepowered.common.accessor.entity.EntityAccessor;
 import org.spongepowered.common.accessor.entity.LivingEntityAccessor;
 import org.spongepowered.common.accessor.entity.player.ServerPlayerEntityAccessor;
 import org.spongepowered.common.bridge.CreatorTrackedBridge;
 import org.spongepowered.common.bridge.data.VanishableBridge;
-import org.spongepowered.common.bridge.entity.ForgeEntityBridge;
-import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
-import org.spongepowered.common.bridge.world.dimension.DimensionBridge;
-import org.spongepowered.common.event.ModEventHooks;
+import org.spongepowered.common.bridge.entity.PlatformEntityBridge;
+import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
+import org.spongepowered.common.bridge.world.PlatformServerWorldBridge;
+import org.spongepowered.common.bridge.world.dimension.PlatformDimensionBridge;
 import org.spongepowered.common.event.SpongeCommonEventFactory;
 import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.PhaseTracker;
+import org.spongepowered.common.hooks.PlatformHooks;
 import org.spongepowered.common.item.util.ItemStackUtil;
-import org.spongepowered.common.network.ModPacketHooks;
 import org.spongepowered.math.vector.Vector3d;
 
 import javax.annotation.Nullable;
@@ -97,7 +103,11 @@ public final class EntityUtil {
     private EntityUtil() {
     }
 
-    public static Entity changeDimension(final Entity entity, final DimensionType dimensionType, final ForgeITeleporterBridge teleporter) {
+    public static Entity changeDimension(final Entity entity, final DimensionType dimensionType, final PlatformITeleporterBridge teleporter) {
+        if (!PlatformHooks.getInstance().getEventHooks().callChangeDimensionPre(entity, dimensionType)) {
+            return null;
+        }
+
         final ServerWorld fromWorld = (ServerWorld) entity.world;
         fromWorld.getProfiler().startSection("changeDimension");
         final DimensionType fromDimensionType = fromWorld.dimension.getType();
@@ -116,22 +126,14 @@ public final class EntityUtil {
             Vec3d vec3d = entity.getMotion();
             float f = 0.0F;
             BlockPos blockpos;
-            if (fromWorld.dimension instanceof EndDimension && toWorld.dimension instanceof OverworldDimension) {
+            if (fromWorld.getDimension() instanceof EndDimension && toWorld.getDimension() instanceof OverworldDimension) {
                 blockpos = toWorld.getHeight(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, toWorld.getSpawnPoint());
             } else if (toWorld.dimension instanceof EndDimension) {
                 blockpos = toWorld.getSpawnCoordinate();
             } else {
-                final double movementFactor = ((DimensionBridge) fromWorld.dimension).bridge$getMovementFactor() / ((DimensionBridge) toWorld).bridge$getMovementFactor();
+                final double movementFactor = ((PlatformDimensionBridge) fromWorld.getDimension()).bridge$getMovementFactor() / ((PlatformDimensionBridge) toWorld.getDimension()).bridge$getMovementFactor();
                 double d0 = entity.posX * movementFactor;
                 double d1 = entity.posZ * movementFactor;
-
-                if (fromWorld.dimension instanceof OverworldDimension && toWorld.dimension instanceof NetherDimension) {
-                    d0 /= 8.0D;
-                    d1 /= 8.0D;
-                } else if (fromWorld.dimension instanceof NetherDimension && toWorld.dimension instanceof OverworldDimension) {
-                    d0 *= 8.0D;
-                    d1 *= 8.0D;
-                }
 
                 double d3 = Math.min(-2.9999872E7D, toWorld.getWorldBorder().minX() + 16.0D);
                 double d4 = Math.min(-2.9999872E7D, toWorld.getWorldBorder().minZ() + 16.0D);
@@ -143,8 +145,7 @@ public final class EntityUtil {
                 blockpos = new BlockPos(d0, entity.posY, d1);
 
                 if (spawnInPortal) {
-                    BlockPattern.PortalInfo blockpattern$portalinfo = toWorld.getDefaultTeleporter()
-                            .placeInExistingPortal(blockpos, vec3d, entity.getTeleportDirection(), vec3d1.x, vec3d1.y, entity instanceof PlayerEntity);
+                    final BlockPattern.PortalInfo blockpattern$portalinfo = toWorld.getDefaultTeleporter().placeInExistingPortal(blockpos, vec3d, entity.getTeleportDirection(), vec3d1.x, vec3d1.y, entity instanceof PlayerEntity);
                     if (blockpattern$portalinfo == null) {
                         return null;
                     }
@@ -171,25 +172,34 @@ public final class EntityUtil {
             return null;
         }
 
-        ((ForgeEntityBridge) entity).bridge$remove(false);
+        ((PlatformEntityBridge) entity).bridge$remove(false);
         fromWorld.getProfiler().endSection();
         fromWorld.resetUpdateEntityTick();
         toWorld.resetUpdateEntityTick();
         fromWorld.getProfiler().endSection();
 
+        PlatformHooks.getInstance().getEventHooks().callChangeDimensionPost(entity, fromDimensionType, dimensionType);
+
         return teleportedEntity;
     }
 
     public static ServerPlayerEntity changeDimension(final ServerPlayerEntity player, final DimensionType dimensionType,
-            final ForgeITeleporterBridge teleporter) {
+            final PlatformITeleporterBridge teleporter) {
+
+        // Sponge Start - Call platform event hook before changing dimensions
+        if (!PlatformHooks.getInstance().getEventHooks().callChangeDimensionPre(player, dimensionType)) {
+            return player;
+        }
+        // Sponge End
 
         ((ServerPlayerEntityAccessor) player).accessor$setInvulnerableDimensionChange(true);
-        final ServerWorld fromWorld = (ServerWorld) player.world;
-        final DimensionType fromDimensionType = fromWorld.dimension.getType();
+        final ServerWorld fromWorld = (ServerWorld) player.getEntityWorld();
+        final DimensionType fromDimensionType = fromWorld.getDimension().getType();
         ServerWorld toWorld = player.getServer().getWorld(dimensionType);
 
-        // You're only getting the credits if you beat Vanilla's THE_END..
-        if (fromDimensionType == DimensionType.THE_END && toWorld.dimension instanceof OverworldDimension && teleporter.bridge$isVanilla()) {
+        // Sponge Start - Only show the credits if coming from Vanilla's The End to any Overworld dimension
+        if (fromDimensionType == DimensionType.THE_END && toWorld.getDimension() instanceof OverworldDimension && teleporter.bridge$isVanilla()) {
+        // Sponge End
             player.detach();
             player.getServerWorld().removePlayer(player);
             if (!player.queuedEndExit) {
@@ -203,17 +213,110 @@ public final class EntityUtil {
 
         player.dimension = dimensionType;
         WorldInfo worldinfo = toWorld.getWorldInfo();
-        ModPacketHooks.sendDimensionData(player.connection.netManager, player);
+        // Sponge Start - Send any platform dimension data
+        PlatformHooks.getInstance().getPacketHooks().sendDimensionData(player.connection.netManager, player);
+        // Sponge End
         player.connection.sendPacket(new SRespawnPacket(dimensionType, worldinfo.getGenerator(), player.interactionManager.getGameType()));
         player.connection.sendPacket(new SServerDifficultyPacket(worldinfo.getDifficulty(), worldinfo.isDifficultyLocked()));
         PlayerList playerlist = player.getServer().getPlayerList();
         playerlist.updatePermissionLevel(player);
-        fromWorld.removePlayer(player);
-        // invalidate call.
-        ((ForgeEntityBridge) player).revive();
+        // Sponge Start - Have the platform handle removing the entity from the world
+        ((PlatformServerWorldBridge) fromWorld).bridge$removeEntity(player, true);
+        ((PlatformEntityBridge) player).bridge$revive();
+        // Sponge End
 
-        ModEventHooks.firePlayerChangedDimensionEvent(player, fromDimensionType, toWorld.dimension.getType());
+        // Sponge Start - Use platform teleporter hook
+        teleporter.bridge$placeEntity(player, fromWorld, toWorld, player.rotationYaw, spawnInPortal -> {
+            double d0 = ((EntityAccessor) player).accessor$getPosX();
+            double d1 = ((EntityAccessor) player).accessor$getPosY();
+            double d2 = ((EntityAccessor) player).accessor$getPosZ();
+            float f = player.rotationPitch;
+            float f1 = player.rotationYaw;
+            double d3 = 8.0D;
+            float f2 = f1;
+            fromWorld.getProfiler().startSection("moving");
+            // Sponge Start - Use platform move factor instead of Vanilla
+            double moveFactor = ((PlatformDimensionBridge) fromWorld.getDimension()).bridge$getMovementFactor() / ((PlatformDimensionBridge) toWorld.getDimension()).bridge$getMovementFactor();
+            // Sponge End
+            d0 *= moveFactor;
+            d2 *= moveFactor;
+            // Sponge Start - Don't assume Vanilla dimension types, check actual dimension instances
+            if (fromWorld.getDimension() instanceof OverworldDimension && toWorld.getDimension() instanceof NetherDimension) {
+                ((ServerPlayerEntityAccessor) player).accessor$setEnteredNetherPosition(player.getPositionVec());
+            } else if (fromWorld.getDimension() instanceof OverworldDimension && toWorld.getDimension() instanceof EndDimension) {
+            // Sponge End
+                BlockPos blockpos = toWorld.getSpawnCoordinate();
+                d0 = (double)blockpos.getX();
+                d1 = (double)blockpos.getY();
+                d2 = (double)blockpos.getZ();
+                f1 = 90.0F;
+                f = 0.0F;
+            }
 
+            player.setLocationAndAngles(d0, d1, d2, f1, f);
+            toWorld.getProfiler().endSection();
+            toWorld.getProfiler().startSection("placing");
+            double d7 = Math.min(-2.9999872E7D, toWorld.getWorldBorder().minX() + 16.0D);
+            double d4 = Math.min(-2.9999872E7D, toWorld.getWorldBorder().minZ() + 16.0D);
+            double d5 = Math.min(2.9999872E7D, toWorld.getWorldBorder().maxX() - 16.0D);
+            double d6 = Math.min(2.9999872E7D, toWorld.getWorldBorder().maxZ() - 16.0D);
+            d0 = MathHelper.clamp(d0, d7, d5);
+            d2 = MathHelper.clamp(d2, d4, d6);
+            player.setLocationAndAngles(d0, d1, d2, f1, f);
+            if (dimensionType == DimensionType.THE_END) {
+                int i = MathHelper.floor(((EntityAccessor) player).accessor$getPosX());
+                int j = MathHelper.floor(((EntityAccessor) player).accessor$getPosY()) - 1;
+                int k = MathHelper.floor(((EntityAccessor) player).accessor$getPosZ());
+                int l = 1;
+                int i1 = 0;
+
+                for(int j1 = -2; j1 <= 2; ++j1) {
+                    for(int k1 = -2; k1 <= 2; ++k1) {
+                        for(int l1 = -1; l1 < 3; ++l1) {
+                            int i2 = i + k1 * 1 + j1 * 0;
+                            int j2 = j + l1;
+                            int k2 = k + k1 * 0 - j1 * 1;
+                            boolean flag = l1 < 0;
+                            toWorld.setBlockState(new BlockPos(i2, j2, k2), flag ? Blocks.OBSIDIAN.getDefaultState() : Blocks.AIR.getDefaultState());
+                        }
+                    }
+                }
+
+                player.setLocationAndAngles((double)i, (double)j, (double)k, f1, 0.0F);
+                player.setMotion(Vec3d.ZERO);
+            // Sponge Start - Allow the platform teleporter to specify if the entity should be placed in the portal
+            } else if (spawnInPortal && !toWorld.getDefaultTeleporter().placeInPortal(player, f2)) {
+            // Sponge End
+                toWorld.getDefaultTeleporter().makePortal(player);
+                toWorld.getDefaultTeleporter().placeInPortal(player, f2);
+            }
+
+            fromWorld.getProfiler().endSection();
+            player.setWorld(toWorld);
+            toWorld.func_217447_b(player);
+            ((ServerPlayerEntityAccessor) player).accessor$func_213846_b(toWorld);
+            player.connection.setPlayerLocation(((EntityAccessor) player).accessor$getPosX(), ((EntityAccessor) player).accessor$getPosY(), ((EntityAccessor) player).accessor$getPosZ(), f1, f);
+            return player;
+        });
+        // Sponge End
+
+        player.interactionManager.setWorld(toWorld);
+        player.connection.sendPacket(new SPlayerAbilitiesPacket(player.abilities));
+        playerlist.sendWorldInfo(player, toWorld);
+        playerlist.sendInventory(player);
+
+        for (EffectInstance effectinstance : player.getActivePotionEffects()) {
+            player.connection.sendPacket(new SPlayEntityEffectPacket(player.getEntityId(), effectinstance));
+        }
+
+        player.connection.sendPacket(new SPlaySoundEventPacket(1032, BlockPos.ZERO, 0, false));
+        ((ServerPlayerEntityAccessor) player).accessor$setLastExperience(-1);
+        ((ServerPlayerEntityAccessor) player).accessor$setLastHealth(-1.0f);
+        ((ServerPlayerEntityAccessor) player).accessor$setLastFoodLevel(-1);
+
+        // Sponge Start - Call platform event hook before changing dimensions
+        PlatformHooks.getInstance().getEventHooks().callChangeDimensionPost(player, fromDimensionType, dimensionType);
+        // Sponge End
         return player;
     }
 

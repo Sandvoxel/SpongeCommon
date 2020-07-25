@@ -77,4 +77,10 @@ public interface EntityAccessor {
     @Invoker("getFireImmuneTicks") int accessor$getFireImmuneTicks();
 
     @Invoker("getPermissionLevel") int accessor$getPermissionLevel();
+
+    @Accessor("posX") double accessor$getPosX();
+
+    @Accessor("posY") double accessor$getPosY();
+
+    @Accessor("posZ") double accessor$getPosZ();
 }

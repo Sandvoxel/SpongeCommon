@@ -22,33 +22,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.accessor.entity.player;
+package org.spongepowered.common.hooks;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.server.ServerWorld;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
-import org.spongepowered.asm.mixin.gen.Invoker;
+import net.minecraft.world.dimension.DimensionType;
+import org.spongepowered.api.world.dimension.DimensionTypes;
+import org.spongepowered.common.world.dimension.SpongeDimensionType;
 
-@Mixin(ServerPlayerEntity.class)
-public interface ServerPlayerEntityAccessor {
+/**
+ * Dimension hooks to handle differences in logic between Sponge's Multi-World system
+ * and a platform's version of it.
+ */
+public interface DimensionHooks {
 
-    @Accessor("invulnerableDimensionChange") void accessor$setInvulnerableDimensionChange(boolean invulnerableDimensionChange);
-
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
-
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean seenCredits);
-
-    @Accessor("enteredNetherPosition") Vec3d accessor$getEnteredNetherPosition();
-
-    @Accessor("enteredNetherPosition") void accessor$setEnteredNetherPosition(Vec3d value);
-
-    @Accessor("lastExperience") void accessor$setLastExperience(int value);
-
-    @Accessor("lastHealth") void accessor$setLastHealth(float value);
-
-    @Accessor("lastFoodLevel") void accessor$setLastFoodLevel(int value);
-
-    @Invoker("func_213846_b") void accessor$func_213846_b(ServerWorld toWorld);
+    /**
+     * Asks the platform if the provided {@link SpongeDimensionType dimension type} should
+     * generate a spawn on load as a default (typically a specific world's config file will
+     * veto this post initial world creation)
+     *
+     * <p>Sponge's DimensionType is not a 1:1 mapping to Mojang's {@link DimensionType} and
+     * it is left up to the platform to calculate the correlation between the two and determine
+     * the appropriate return value</p>
+     *
+     * @param dimensionType The type
+     * @return True to generate spawn on load as a default
+     */
+    default boolean doesGenerateSpawnOnLoad(SpongeDimensionType dimensionType) {
+        return DimensionTypes.OVERWORLD.get() == dimensionType;
+    }
 }

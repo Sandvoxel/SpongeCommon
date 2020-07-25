@@ -22,21 +22,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.network;
+package org.spongepowered.common.bridge.world;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.NetworkManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.Teleporter;
+import net.minecraft.world.server.ServerWorld;
+
+import java.util.function.Function;
 
 /**
- * Static methods for packets where Forge would have sent them in common code we overwrite of Forge's.
+ * Bridge methods designed as hooks for various methods called on a {@link Teleporter}.
  *
- * It is expected that SpongeForge (or another implementation) will overwrite these methods to send their specific packet.
+ * <p>The Forge platform adds a mod implementable "ITeleporter" that is meant to be passed to
+ * methods where an {@link Entity} is changing dimensions. This bridge is modeled after that
+ * hook</p>
  */
-public final class ModPacketHooks {
+public interface PlatformITeleporterBridge {
 
-    private ModPacketHooks() {
+    PlatformITeleporterBridge NO_PORTAL = new PlatformITeleporterBridge() {
+        @Override
+        public Entity bridge$placeEntity(Entity entity, ServerWorld currentWorld, ServerWorld destWorld, float yaw,
+                Function<Boolean, Entity> repositionEntity) {
+            return repositionEntity.apply(false);
+        }
+    };
+
+    default Entity bridge$placeEntity(Entity entity, ServerWorld fromWorld, ServerWorld toWorld, float yaw, Function<Boolean, Entity> repositionEntity) {
+        return repositionEntity.apply(true);
     }
 
-    public static void sendDimensionData(final NetworkManager networkManager, final ServerPlayerEntity player) {
+    default boolean bridge$isVanilla() {
+        return this.getClass().equals(Teleporter.class);
     }
 }

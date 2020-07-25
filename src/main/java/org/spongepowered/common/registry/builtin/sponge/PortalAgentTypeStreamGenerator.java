@@ -26,19 +26,18 @@ package org.spongepowered.common.registry.builtin.sponge;
 
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.dimension.EndDimension;
-import net.minecraft.world.dimension.NetherDimension;
 import net.minecraft.world.server.ServerWorld;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.world.teleport.PortalAgentType;
-import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
+import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
 import org.spongepowered.common.world.SpongePortalAgentType;
 
 import java.util.stream.Stream;
 
 public final class PortalAgentTypeStreamGenerator {
 
-    private static final PortalAgentType THE_END = new SpongePortalAgentType(ResourceKey.minecraft("default_the_end"), (Class<ForgeITeleporterBridge>) (Object) Teleporter.class);
-    private static final PortalAgentType THE_NETHER = new SpongePortalAgentType(ResourceKey.minecraft("default_the_nether"), (Class<ForgeITeleporterBridge>) (Object) Teleporter.class);
+    private static final PortalAgentType THE_END = new SpongePortalAgentType(ResourceKey.minecraft("default_the_end"), (Class<PlatformITeleporterBridge>) (Object) Teleporter.class);
+    private static final PortalAgentType THE_NETHER = new SpongePortalAgentType(ResourceKey.minecraft("default_the_nether"), (Class<PlatformITeleporterBridge>) (Object) Teleporter.class);
 
     private PortalAgentTypeStreamGenerator() {
     }

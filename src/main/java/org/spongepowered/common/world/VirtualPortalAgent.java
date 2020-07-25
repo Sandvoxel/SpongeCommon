@@ -30,7 +30,7 @@ import org.spongepowered.api.world.teleport.PortalAgent;
 import org.spongepowered.api.world.teleport.PortalAgentType;
 import org.spongepowered.common.SpongeCommon;
 import org.spongepowered.common.SpongeImplHooks;
-import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
+import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -40,23 +40,23 @@ import java.util.Optional;
 // This is a giant hack to allow passing a Forge ITeleporter to the API.
 // TODO: https://github.com/SpongePowered/SpongeForge/issues/2266
 public final class VirtualPortalAgent implements PortalAgent {
-    private static final Map<Class<? extends ForgeITeleporterBridge>, PortalAgentType> TYPES = new HashMap<>();
-    private final ForgeITeleporterBridge teleporter;
+    private static final Map<Class<? extends PlatformITeleporterBridge>, PortalAgentType> TYPES = new HashMap<>();
+    private final PlatformITeleporterBridge teleporter;
     private final PortalAgentType type;
 
-    public static PortalAgent workaround(final ForgeITeleporterBridge teleporter) {
+    public static PortalAgent workaround(final PlatformITeleporterBridge teleporter) {
         if (teleporter instanceof PortalAgent) {
             return (PortalAgent) teleporter;
         }
         return new VirtualPortalAgent(teleporter);
     }
 
-    public VirtualPortalAgent(final ForgeITeleporterBridge teleporter) {
+    public VirtualPortalAgent(final PlatformITeleporterBridge teleporter) {
         this.teleporter = teleporter;
         this.type = getType(teleporter.getClass());
     }
 
-    private static PortalAgentType getType(final Class<? extends ForgeITeleporterBridge> teleporterClass) {
+    private static PortalAgentType getType(final Class<? extends PlatformITeleporterBridge> teleporterClass) {
         return TYPES.computeIfAbsent(teleporterClass, klass -> {
             final String modId = SpongeImplHooks.getModIdFromClass(teleporterClass);
             final String name = teleporterClass.getSimpleName().toLowerCase(Locale.ENGLISH);
@@ -65,7 +65,7 @@ public final class VirtualPortalAgent implements PortalAgent {
         });
     }
 
-    public ForgeITeleporterBridge getTeleporter() {
+    public PlatformITeleporterBridge getTeleporter() {
         return this.teleporter;
     }
 

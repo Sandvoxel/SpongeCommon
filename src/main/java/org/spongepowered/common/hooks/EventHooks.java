@@ -22,33 +22,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.accessor.entity.player;
+package org.spongepowered.common.hooks;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.server.ServerWorld;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
-import org.spongepowered.asm.mixin.gen.Invoker;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.dimension.DimensionType;
 
-@Mixin(ServerPlayerEntity.class)
-public interface ServerPlayerEntityAccessor {
+/**
+ * Event hooks for when there is no specific event translation between Sponge
+ * and the platform.
+ */
+public interface EventHooks {
 
-    @Accessor("invulnerableDimensionChange") void accessor$setInvulnerableDimensionChange(boolean invulnerableDimensionChange);
+    default boolean callChangeDimensionPre(Entity entity, DimensionType toDimensionType) {
+        return true;
+    }
 
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
-
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean seenCredits);
-
-    @Accessor("enteredNetherPosition") Vec3d accessor$getEnteredNetherPosition();
-
-    @Accessor("enteredNetherPosition") void accessor$setEnteredNetherPosition(Vec3d value);
-
-    @Accessor("lastExperience") void accessor$setLastExperience(int value);
-
-    @Accessor("lastHealth") void accessor$setLastHealth(float value);
-
-    @Accessor("lastFoodLevel") void accessor$setLastFoodLevel(int value);
-
-    @Invoker("func_213846_b") void accessor$func_213846_b(ServerWorld toWorld);
+    default void callChangeDimensionPost(Entity entity, DimensionType fromDimensionType, DimensionType toDimensionType) {
+    }
 }

@@ -29,13 +29,13 @@ import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.world.teleport.PortalAgent;
 import org.spongepowered.api.world.teleport.PortalAgentType;
 import org.spongepowered.common.SpongeCatalogType;
-import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
+import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
 
 public final class SpongePortalAgentType extends SpongeCatalogType implements PortalAgentType {
 
-    private final Class<? extends ForgeITeleporterBridge> portalAgentClass;
+    private final Class<? extends PlatformITeleporterBridge> portalAgentClass;
 
-    public SpongePortalAgentType(ResourceKey key, Class<? extends ForgeITeleporterBridge> portalAgentClass) {
+    public SpongePortalAgentType(ResourceKey key, Class<? extends PlatformITeleporterBridge> portalAgentClass) {
         super(key);
         this.portalAgentClass = Preconditions.checkNotNull(portalAgentClass, "The class was null for '" + this.getKey() + ".");
     }

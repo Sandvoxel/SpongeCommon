@@ -31,7 +31,7 @@ import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
+import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
 import org.spongepowered.common.entity.EntityUtil;
 
 import javax.annotation.Nullable;
@@ -55,6 +55,6 @@ public abstract class EntityMixin_Vanilla {
             return null;
         }
 
-        return EntityUtil.changeDimension((Entity) (Object) this, destination, (ForgeITeleporterBridge) this.shadow$getServer().getWorld(destination).getDefaultTeleporter());
+        return EntityUtil.changeDimension((Entity) (Object) this, destination, (PlatformITeleporterBridge) this.shadow$getServer().getWorld(destination).getDefaultTeleporter());
     }
 }

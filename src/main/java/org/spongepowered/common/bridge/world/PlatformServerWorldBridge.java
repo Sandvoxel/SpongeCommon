@@ -22,33 +22,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.accessor.entity.player;
+package org.spongepowered.common.bridge.world;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.entity.Entity;
 import net.minecraft.world.server.ServerWorld;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
-import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(ServerPlayerEntity.class)
-public interface ServerPlayerEntityAccessor {
-
-    @Accessor("invulnerableDimensionChange") void accessor$setInvulnerableDimensionChange(boolean invulnerableDimensionChange);
-
-    @Accessor("seenCredits") boolean accessor$getSeenCredits();
-
-    @Accessor("seenCredits") void accessor$setSeenCredits(boolean seenCredits);
-
-    @Accessor("enteredNetherPosition") Vec3d accessor$getEnteredNetherPosition();
-
-    @Accessor("enteredNetherPosition") void accessor$setEnteredNetherPosition(Vec3d value);
-
-    @Accessor("lastExperience") void accessor$setLastExperience(int value);
-
-    @Accessor("lastHealth") void accessor$setLastHealth(float value);
-
-    @Accessor("lastFoodLevel") void accessor$setLastFoodLevel(int value);
-
-    @Invoker("func_213846_b") void accessor$func_213846_b(ServerWorld toWorld);
+public interface PlatformServerWorldBridge {
+    default void bridge$removeEntity(Entity entity, boolean keepData) {
+        ((ServerWorld) this).removeEntity(entity);
+    }
 }

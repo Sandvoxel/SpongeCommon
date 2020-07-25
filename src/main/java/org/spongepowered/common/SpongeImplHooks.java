@@ -72,7 +72,7 @@ import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.common.accessor.world.WorldAccessor;
 import org.spongepowered.common.bridge.entity.player.PlayerEntityBridge;
-import org.spongepowered.common.bridge.world.ForgeITeleporterBridge;
+import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
 import org.spongepowered.common.bridge.world.storage.WorldInfoBridge;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.context.ItemDropData;
@@ -162,7 +162,7 @@ public class SpongeImplHooks {
 
     // World
 
-    public static void registerPortalAgentType(@Nullable final ForgeITeleporterBridge teleporter) {
+    public static void registerPortalAgentType(@Nullable final PlatformITeleporterBridge teleporter) {
         // Overwritten in SpongeForge
     }
 

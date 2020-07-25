@@ -22,34 +22,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.bridge.world;
+package org.spongepowered.common.hooks;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.world.Teleporter;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-
-import java.util.function.Function;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.NetworkManager;
 
 /**
- * Compatibility interface to handle Forge binary patching {@link Teleporter} to implement their ITeleporter
+ * Packet hooks for when a platform is expecting to send a specific packet.
  */
-public interface ForgeITeleporterBridge {
+public interface PacketHooks {
 
-    ForgeITeleporterBridge NO_PORTAL = new ForgeITeleporterBridge() {
-        @Override
-        public Entity bridge$placeEntity(Entity entity, ServerWorld currentWorld, ServerWorld destWorld, float yaw,
-                Function<Boolean, Entity> repositionEntity) {
-            return repositionEntity.apply(false);
-        }
-    };
-
-    default Entity bridge$placeEntity(Entity entity, ServerWorld currentWorld, ServerWorld destWorld, float yaw,
-            Function<Boolean, Entity> repositionEntity) {
-        return repositionEntity.apply(true);
-    }
-
-    default boolean bridge$isVanilla() {
-        return this.getClass().equals(Teleporter.class);
+    default void sendDimensionData(NetworkManager manager, ServerPlayerEntity player) {
     }
 }
