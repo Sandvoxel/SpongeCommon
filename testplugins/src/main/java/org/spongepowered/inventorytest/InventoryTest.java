@@ -4,6 +4,7 @@ import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
+import org.spongepowered.api.event.item.inventory.TransferInventoryEvent;
 import org.spongepowered.api.event.item.inventory.container.ClickContainerEvent;
 import org.spongepowered.api.event.item.inventory.container.InteractContainerEvent;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
@@ -22,17 +23,32 @@ public class InventoryTest {
             System.out.println("Cursor: " + cursor.getOriginal().getType() + "x" + cursor.getOriginal().getQuantity() + "->" +
                     cursor.getFinal().getType() + "x" + cursor.getFinal().getQuantity()
             );
-            for (SlotTransaction slotTrans : ((ClickContainerEvent) event).getTransactions()) {
-                System.out.println("SlotTr: " + slotTrans.getOriginal().getType() + "x" + slotTrans.getOriginal().getQuantity() + "->" +
-                        slotTrans.getFinal().getType() + "x" + slotTrans.getFinal().getQuantity() + "[" + slotTrans.getSlot().get(Keys.SLOT_INDEX).get() + "]");
-            }
 
         }
+
     }
 
     @Listener
     public void onInteract(ChangeInventoryEvent event) {
+        System.out.println(event.getClass().getSimpleName() + " " + event.getInventory().getClass().getSimpleName());
+        for (SlotTransaction slotTrans : event.getTransactions()) {
+            System.out.println("SlotTr: " + slotTrans.getOriginal().getType() + "x" + slotTrans.getOriginal().getQuantity() + "->" +
+                    slotTrans.getFinal().getType() + "x" + slotTrans.getFinal().getQuantity() + "[" + slotTrans.getSlot().get(Keys.SLOT_INDEX).get() + "]");
+        }
 //        System.out.println(event);
+    }
+
+    @Listener
+    public void onTransfer(TransferInventoryEvent event) {
+        if (event instanceof TransferInventoryEvent.Post) {
+            System.out.println(event.getClass().getSimpleName() + " " + event.getSourceInventory().getClass().getSimpleName() + "=>" + event.getTargetInventory().getClass().getSimpleName());
+            final Integer sourceIdx = ((TransferInventoryEvent.Post) event).getSourceSlot().get(Keys.SLOT_INDEX).get();
+            final Integer targetIdx = ((TransferInventoryEvent.Post) event).getTargetSlot().get(Keys.SLOT_INDEX).get();
+            final ItemStackSnapshot item = ((TransferInventoryEvent.Post) event).getTransferredItem();
+            System.out.println("[" + sourceIdx + "] -> [" + targetIdx + "] " + item.getType() + "x" + item.getQuantity());
+        }
+
+        //        System.out.println(event);
     }
 //
 //    public static net.minecraft.inventory.container.Container doStuff(net.minecraft.inventory.container.Container mcContainer, PlayerEntity player) {
