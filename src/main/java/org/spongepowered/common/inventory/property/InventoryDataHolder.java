@@ -24,38 +24,24 @@
  */
 package org.spongepowered.common.inventory.property;
 
+import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.Key;
 import org.spongepowered.api.data.value.Value;
 import org.spongepowered.api.item.inventory.Inventory;
+import org.spongepowered.common.data.holder.SpongeDataHolder;
 
 import java.util.Optional;
-import java.util.Set;
 
-public interface InventoryDataHolder extends Inventory {
+public interface InventoryDataHolder extends SpongeDataHolder, Inventory {
 
     @Override
     default <V> Optional<V> get(Inventory child, Key<? extends Value<V>> key) {
-        return Optional.empty();
+        return this.getProviderFor(key).get((DataHolder) child);
     }
 
-    @Override default <E> Optional<E> get(Key<? extends Value<E>> key) {
-        return Optional.empty();
-    }
-
-    @Override default <E, V extends Value<E>> Optional<V> getValue(Key<V> key) {
-        return Optional.empty();
-    }
-
-    @Override default boolean supports(Key<?> key) {
-        return false;
-    }
-
-    @Override default Set<Key<?>> getKeys() {
-        return null;
-    }
-
-    @Override default Set<Value.Immutable<?>> getValues() {
-        return null;
+    @Override
+    default <E> Optional<E> get(Key<? extends Value<E>> key) {
+        return this.getProviderFor(key).get(this);
     }
 
 }
