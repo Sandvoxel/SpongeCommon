@@ -1,8 +1,13 @@
 package org.spongepowered.inventorytest;
 
+import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
+import org.spongepowered.api.event.item.inventory.container.ClickContainerEvent;
 import org.spongepowered.api.event.item.inventory.container.InteractContainerEvent;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.item.inventory.transaction.SlotTransaction;
 import org.spongepowered.plugin.jvm.Plugin;
 
 @Plugin("inventorytest")
@@ -10,12 +15,24 @@ public class InventoryTest {
 
     @Listener
     public void onClickContainer(InteractContainerEvent event) {
-        System.out.println(event);
+//        System.out.println(event);
+        if (event instanceof ClickContainerEvent) {
+            System.out.println(event.getClass().getSimpleName() + " " + event.getContainer().getClass().getSimpleName());
+            final Transaction<ItemStackSnapshot> cursor = event.getCursorTransaction();
+            System.out.println("Cursor: " + cursor.getOriginal().getType() + "x" + cursor.getOriginal().getQuantity() + "->" +
+                    cursor.getFinal().getType() + "x" + cursor.getFinal().getQuantity()
+            );
+            for (SlotTransaction slotTrans : ((ClickContainerEvent) event).getTransactions()) {
+                System.out.println("SlotTr: " + slotTrans.getOriginal().getType() + "x" + slotTrans.getOriginal().getQuantity() + "->" +
+                        slotTrans.getFinal().getType() + "x" + slotTrans.getFinal().getQuantity());
+            }
+
+        }
     }
 
     @Listener
     public void onInteract(ChangeInventoryEvent event) {
-        System.out.println(event);
+//        System.out.println(event);
     }
 //
 //    public static net.minecraft.inventory.container.Container doStuff(net.minecraft.inventory.container.Container mcContainer, PlayerEntity player) {
