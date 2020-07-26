@@ -35,7 +35,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.management.PlayerProfileCache;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.WorldType;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.listener.IChunkStatusListenerFactory;
@@ -93,11 +92,7 @@ public abstract class IntegratedServerMixin_Vanilla extends MinecraftServer impl
     @Overwrite
     public void loadAllWorlds(String saveName, String worldNameIn, long seed, WorldType type, JsonElement generatorOptions) {
         this.setUserMessage(new TranslationTextComponent("menu.loadingLevel"));
-        this.getWorldManager().loadAllWorlds(saveName, worldNameIn, seed, type, generatorOptions);
+        this.getWorldManager().loadAllWorlds(saveName, worldNameIn, seed, type, generatorOptions, true, this.worldSettings, this.mc.gameSettings.difficulty);
     }
 
-//    @Override
-//    public void loadAllWorlds(String saveName, String worldNameIn, long seed, WorldType type, JsonElement generatorOptions) {
-//        this.getWorldManager().loadAllWorlds(saveName, worldNameIn, seed, type, generatorOptions, true, this.worldSettings, this.mc.gameSettings.difficulty);
-//    }
 }
