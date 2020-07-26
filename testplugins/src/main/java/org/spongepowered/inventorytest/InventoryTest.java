@@ -24,7 +24,7 @@ public class InventoryTest {
             );
             for (SlotTransaction slotTrans : ((ClickContainerEvent) event).getTransactions()) {
                 System.out.println("SlotTr: " + slotTrans.getOriginal().getType() + "x" + slotTrans.getOriginal().getQuantity() + "->" +
-                        slotTrans.getFinal().getType() + "x" + slotTrans.getFinal().getQuantity());
+                        slotTrans.getFinal().getType() + "x" + slotTrans.getFinal().getQuantity() + "[" + slotTrans.getSlot().get(Keys.SLOT_INDEX).get() + "]");
             }
 
         }
