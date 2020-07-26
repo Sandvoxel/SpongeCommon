@@ -59,7 +59,8 @@
         "world.storage.WorldInfoMixin",
 
 
-        "data.CustomDataHolderMixin"
+        "data.CustomDataHolderMixin",
+        "network.PacketThreadUtilMixin"
     ],
     "client": [
         "client.network.handshake.ClientHandshakeNetHandlerMixin",
