@@ -4,6 +4,7 @@ import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
+import org.spongepowered.api.event.item.inventory.EnchantItemEvent;
 import org.spongepowered.api.event.item.inventory.TransferInventoryEvent;
 import org.spongepowered.api.event.item.inventory.container.ClickContainerEvent;
 import org.spongepowered.api.event.item.inventory.container.InteractContainerEvent;
@@ -17,20 +18,24 @@ public class InventoryTest {
     @Listener
     public void onClickContainer(InteractContainerEvent event) {
 //        System.out.println(event);
-        if (event instanceof ClickContainerEvent) {
-            System.out.println(event.getClass().getSimpleName() + " " + event.getContainer().getClass().getSimpleName());
-            final Transaction<ItemStackSnapshot> cursor = event.getCursorTransaction();
-            System.out.println("Cursor: " + cursor.getOriginal().getType() + "x" + cursor.getOriginal().getQuantity() + "->" +
-                    cursor.getFinal().getType() + "x" + cursor.getFinal().getQuantity()
-            );
-
+        if (event instanceof EnchantItemEvent) {
+            System.out.println(event.getClass().getSimpleName() + " [" + ((EnchantItemEvent) event).getOption() + "] S:" + ((EnchantItemEvent)event).getSeed());
         }
 
     }
 
     @Listener
     public void onInteract(ChangeInventoryEvent event) {
-        System.out.println(event.getClass().getSimpleName() + " " + event.getInventory().getClass().getSimpleName());
+
+        if (event instanceof ClickContainerEvent) {
+            System.out.println(event.getClass().getSimpleName() + " " + ((ClickContainerEvent)event).getContainer().getClass().getSimpleName());
+            final Transaction<ItemStackSnapshot> cursor = ((ClickContainerEvent)event).getCursorTransaction();
+            System.out.println("Cursor: " + cursor.getOriginal().getType() + "x" + cursor.getOriginal().getQuantity() + "->" +
+                    cursor.getFinal().getType() + "x" + cursor.getFinal().getQuantity()
+            );
+        } else {
+            System.out.println(event.getClass().getSimpleName() + " " + event.getInventory().getClass().getSimpleName());
+        }
         for (SlotTransaction slotTrans : event.getTransactions()) {
             System.out.println("SlotTr: " + slotTrans.getOriginal().getType() + "x" + slotTrans.getOriginal().getQuantity() + "->" +
                     slotTrans.getFinal().getType() + "x" + slotTrans.getFinal().getQuantity() + "[" + slotTrans.getSlot().get(Keys.SLOT_INDEX).get() + "]");
