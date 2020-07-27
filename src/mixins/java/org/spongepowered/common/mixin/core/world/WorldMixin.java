@@ -30,7 +30,7 @@ import net.minecraft.world.storage.WorldInfo;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.world.ServerWorldBridge;
+import org.spongepowered.common.bridge.world.TrackedWorldBridge;
 import org.spongepowered.common.bridge.world.WorldBridge;
 
 import java.util.Random;
@@ -52,7 +52,7 @@ public abstract class WorldMixin implements WorldBridge, IWorld {
         if (this.impl$hasChecked) {
             return this.impl$isDefinitelyFake;
         }
-        this.impl$isDefinitelyFake = this.isRemote || this.worldInfo == null || this.worldInfo.getWorldName() == null || !(this instanceof ServerWorldBridge);
+        this.impl$isDefinitelyFake = this.isRemote || this.worldInfo == null || !(this instanceof TrackedWorldBridge);
         this.impl$hasChecked = true;
         return this.impl$isDefinitelyFake;
     }
