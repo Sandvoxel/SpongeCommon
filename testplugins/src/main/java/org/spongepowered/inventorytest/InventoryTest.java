@@ -115,7 +115,11 @@ public class InventoryTest {
                 case 45:
                 case 53:
                     inventory = builder.item(slot.peek().createSnapshot()).completeStructure().build();
+                    break;
+                default:
+                    inventory = doubleMyInventory;
             }
+            slot.set(ItemStack.of(ItemTypes.BEDROCK));
             if (inventory != null) {
                 menu.setCurrentInventory(inventory);
             }
