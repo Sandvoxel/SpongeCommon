@@ -1,5 +1,6 @@
 package org.spongepowered.inventorytest;
 
+import net.kyori.adventure.text.Component;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.event.Listener;
@@ -12,8 +13,16 @@ import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.inventory.transaction.SlotTransaction;
 import org.spongepowered.plugin.jvm.Plugin;
 
+import java.util.Optional;
+
 @Plugin("inventorytest")
 public class InventoryTest {
+
+
+    @Listener
+    public void onOpen(InteractContainerEvent.Open event) {
+        final Optional<Component> component = event.getContainer().get(Keys.DISPLAY_NAME);
+    }
 
     @Listener
     public void onClickContainer(InteractContainerEvent event) {
