@@ -17,6 +17,7 @@
     "api.entity.item.minecart.ContainerMinecartEntityMixin_Carrier_Inventory_API",
     "api.entity.merchant.villager.AbstractVillagerEntity_Carrier_Inventory_API",
     "api.entity.passive.horse.AbstractHorseEntityMixin_Carrier_Inventory_API",
+    "api.entity.player.PlayerEntityMixin_Inventory_API",
     "api.entity.player.PlayerInventoryMixin_Carried_Inventory_API",
     "api.entity.player.PlayerInventoryMixin_Inventory_API",
     "api.entity.player.ServerPlayerEntityMixin_Carrier_Inventory_API",
