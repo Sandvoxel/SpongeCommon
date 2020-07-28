@@ -34,7 +34,7 @@ import org.spongepowered.api.world.SerializationBehavior;
 import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.difficulty.Difficulty;
 import org.spongepowered.api.world.gen.GeneratorType;
-import org.spongepowered.api.world.teleport.PortalAgentType;
+import org.spongepowered.api.world.teleport.PortalLogic;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Intrinsic;
@@ -105,7 +105,7 @@ public abstract class WorldSettingsMixin_API implements WorldArchetype {
     }
 
     @Override
-    public PortalAgentType getPortalAgentType() {
+    public PortalLogic getPortalAgentType() {
         return ((WorldSettingsBridge) this).bridge$getPortalAgentType();
     }
 

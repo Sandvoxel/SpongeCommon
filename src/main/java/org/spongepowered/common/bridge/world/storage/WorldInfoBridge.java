@@ -29,7 +29,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.dimension.DimensionType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.world.SerializationBehavior;
-import org.spongepowered.api.world.teleport.PortalAgentType;
+import org.spongepowered.api.world.teleport.PortalLogic;
 import org.spongepowered.common.config.SpongeConfig;
 import org.spongepowered.common.config.type.WorldConfig;
 import org.spongepowered.common.world.dimension.SpongeDimensionType;
@@ -80,7 +80,7 @@ public interface WorldInfoBridge {
 
     void bridge$setSerializationBehavior(SerializationBehavior behavior);
 
-    PortalAgentType bridge$getPortalAgent();
+    PortalLogic bridge$getPortalAgent();
 
     boolean bridge$isModCreated();
 

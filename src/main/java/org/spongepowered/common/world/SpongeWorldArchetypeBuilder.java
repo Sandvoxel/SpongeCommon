@@ -42,8 +42,8 @@ import org.spongepowered.api.world.dimension.DimensionTypes;
 import org.spongepowered.api.world.gen.GeneratorType;
 import org.spongepowered.api.world.gen.GeneratorTypes;
 import org.spongepowered.api.world.storage.WorldProperties;
-import org.spongepowered.api.world.teleport.PortalAgentType;
-import org.spongepowered.api.world.teleport.PortalAgentTypes;
+import org.spongepowered.api.world.teleport.PortalLogic;
+import org.spongepowered.api.world.teleport.PortalLogicTypes;
 import org.spongepowered.common.bridge.ResourceKeyBridge;
 import org.spongepowered.common.bridge.world.WorldSettingsBridge;
 import org.spongepowered.common.hooks.PlatformHooks;
@@ -63,7 +63,7 @@ public final class SpongeWorldArchetypeBuilder implements WorldArchetype.Builder
     private Difficulty difficulty;
     private GameMode gameMode;
     private SerializationBehavior serializationBehavior;
-    private PortalAgentType portalAgentType;
+    private PortalLogic portalLogic;
     private long seed;
     private boolean areStructuresEnabled;
     private boolean hardcore;
@@ -166,9 +166,9 @@ public final class SpongeWorldArchetypeBuilder implements WorldArchetype.Builder
     }
 
     @Override
-    public WorldArchetype.Builder portalAgent(PortalAgentType type) {
+    public WorldArchetype.Builder portalAgent(PortalLogic type) {
         Preconditions.checkNotNull(type);
-        this.portalAgentType = type;
+        this.portalLogic = type;
         return this;
     }
 
@@ -271,7 +271,7 @@ public final class SpongeWorldArchetypeBuilder implements WorldArchetype.Builder
         this.pvpEnabled = true;
         this.commandsEnabled = true;
         this.generateBonusChest = false;
-        this.portalAgentType = PortalAgentTypes.DEFAULT.get();
+        this.portalLogic = PortalLogicTypes.DEFAULT.get();
         this.generatorSettings = this.generatorType.getDefaultGeneratorSettings();
         return this;
     }
@@ -293,7 +293,7 @@ public final class SpongeWorldArchetypeBuilder implements WorldArchetype.Builder
         settingsBridge.bridge$setPVPEnabled(this.pvpEnabled);
         settingsBridge.bridge$setCommandsEnabled(this.commandsEnabled);
         settingsBridge.bridge$setGenerateBonusChest(this.generateBonusChest);
-        settingsBridge.bridge$setPortalAgentType(this.portalAgentType);
+        settingsBridge.bridge$setPortalAgentType(this.portalLogic);
         settingsBridge.bridge$setRandomSeed(this.randomizedSeed);
         settingsBridge.bridge$setGeneratorSettings(this.generatorSettings);
 

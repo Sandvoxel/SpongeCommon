@@ -26,8 +26,6 @@ package org.spongepowered.common.mixin.api.mcp.world.storage;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonParseException;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.key.KeyedValue;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Difficulty;
@@ -42,12 +40,11 @@ import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.entity.living.trader.WanderingTrader;
 import org.spongepowered.api.world.SerializationBehavior;
-import org.spongepowered.api.world.WorldBorder;
 import org.spongepowered.api.world.dimension.DimensionType;
 import org.spongepowered.api.world.gamerule.GameRule;
 import org.spongepowered.api.world.gen.GeneratorType;
 import org.spongepowered.api.world.storage.WorldProperties;
-import org.spongepowered.api.world.teleport.PortalAgentType;
+import org.spongepowered.api.world.teleport.PortalLogic;
 import org.spongepowered.api.world.weather.Weather;
 import org.spongepowered.api.world.weather.Weathers;
 import org.spongepowered.asm.mixin.Implements;
@@ -62,14 +59,12 @@ import org.spongepowered.common.bridge.world.dimension.DimensionTypeBridge;
 import org.spongepowered.common.bridge.world.storage.WorldInfoBridge;
 import org.spongepowered.common.data.persistence.NbtTranslator;
 import org.spongepowered.common.util.Constants;
-import org.spongepowered.common.util.MissingImplementationException;
 import org.spongepowered.common.util.VecHelper;
 import org.spongepowered.math.vector.Vector3i;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -180,7 +175,7 @@ public abstract class WorldInfoMixin_API implements WorldProperties {
     }
 
     @Override
-    public PortalAgentType getPortalAgentType() {
+    public PortalLogic getPortalAgentType() {
         return ((WorldInfoBridge) this).bridge$getPortalAgent();
     }
 

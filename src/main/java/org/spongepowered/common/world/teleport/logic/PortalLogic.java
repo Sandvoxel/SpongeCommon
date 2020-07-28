@@ -22,35 +22,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.event.tracking.phase.entity;
+package org.spongepowered.common.world.teleport.logic;
 
-import net.minecraft.world.server.ServerWorld;
-import org.spongepowered.common.util.PrettyPrinter;
-import org.spongepowered.common.event.tracking.IPhaseState;
-import org.spongepowered.common.event.tracking.PhaseTracker;
+import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
 
-public class DimensionChangeContext extends EntityContext<DimensionChangeContext> {
-
-    private ServerWorld targetWorld;
-
-    DimensionChangeContext(
-            IPhaseState<? extends DimensionChangeContext> state, PhaseTracker tracker) {
-        super(state, tracker);
-    }
-
-    public ServerWorld getTargetWorld() {
-        return this.targetWorld;
-    }
-
-    public DimensionChangeContext setTargetWorld(ServerWorld targetWorld) {
-        this.targetWorld = targetWorld;
-        return this;
-    }
-
-    @Override
-    public PrettyPrinter printCustom(PrettyPrinter printer, int indent) {
-        String s = String.format("%1$"+indent+"s", "");
-        return super.printCustom(printer, indent)
-            .add(s + "- %s: %s", "TargetTeleportWorld", this.targetWorld);
-    }
+public abstract class PortalLogic {
 }

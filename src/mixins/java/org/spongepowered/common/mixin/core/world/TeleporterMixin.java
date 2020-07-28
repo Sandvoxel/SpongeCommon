@@ -25,27 +25,9 @@
 package org.spongepowered.common.mixin.core.world;
 
 import net.minecraft.world.Teleporter;
-import net.minecraft.world.server.ServerWorld;
-import org.spongepowered.api.world.teleport.PortalAgentType;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.common.bridge.world.TeleporterBridge;
-import org.spongepowered.common.registry.builtin.sponge.PortalAgentTypeStreamGenerator;
+import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
 
 @Mixin(Teleporter.class)
-public abstract class TeleporterMixin implements TeleporterBridge {
-
-    private PortalAgentType impl$portalAgentType;
-
-    @Inject(method = "<init>", at = @At("TAIL"))
-    private void impl$setPortalAgentType(ServerWorld worldIn, CallbackInfo ci) {
-        this.impl$portalAgentType = PortalAgentTypeStreamGenerator.find(worldIn);
-    }
-
-    @Override
-    public PortalAgentType bridge$getPortalAgentType() {
-        return this.impl$portalAgentType;
-    }
+public abstract class TeleporterMixin implements PlatformITeleporterBridge {
 }

@@ -22,20 +22,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.event.tracking.phase.entity;
+package org.spongepowered.common.world.teleport;
 
-import org.spongepowered.common.event.tracking.PhaseTracker;
+import org.spongepowered.api.ResourceKey;
+import org.spongepowered.api.world.ServerLocation;
+import org.spongepowered.api.world.teleport.PortalLogic;
+import org.spongepowered.common.SpongeCatalogType;
 
-final class LeavingDimensionState extends EntityPhaseState<BasicEntityContext> {
+import java.util.Optional;
 
-    @Override
-    public BasicEntityContext createNewContext(final PhaseTracker tracker) {
-        return new BasicEntityContext(this, tracker);
+public final class SpongePortalLogic extends SpongeCatalogType implements PortalLogic {
+
+    public SpongePortalLogic(final ResourceKey key, final org.spongepowered.common.world.teleport.logic.PortalLogic logic) {
+        super(key);
     }
 
     @Override
-    public boolean doesDenyChunkRequests() {
-        return false;
+    public int getSearchRadius() {
+        return 0;
     }
 
+    @Override
+    public PortalLogic setSearchRadius(int radius) {
+        return null;
+    }
+
+    @Override
+    public int getCreationRadius() {
+        return 0;
+    }
+
+    @Override
+    public PortalLogic setCreationRadius(int radius) {
+        return null;
+    }
+
+    @Override
+    public Optional<ServerLocation> findOrCreatePortal(ServerLocation targetLocation) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<ServerLocation> findPortal(ServerLocation targetLocation) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<ServerLocation> createPortal(ServerLocation targetLocation) {
+        return Optional.empty();
+    }
 }

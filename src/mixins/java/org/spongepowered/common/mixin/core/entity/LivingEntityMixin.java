@@ -574,8 +574,6 @@ public abstract class LivingEntityMixin extends EntityMixin implements LivingEnt
                         return false;
                     }
                     final Vector3d position = event.getToPosition();
-//                    this.rotationYaw = (float) event.getToTransform().getYaw();
-//                    this.rotationPitch = (float) event.getToTransform().getPitch();
                     this.shadow$setPositionAndUpdate(position.getX(), position.getY(), position.getZ());
                 } else {
                     this.shadow$setPositionAndUpdate(this.posX, this.posY, this.posZ);
@@ -599,8 +597,6 @@ public abstract class LivingEntityMixin extends EntityMixin implements LivingEnt
                     return false;
                 }
                 final Vector3d position = event.getToPosition();
-//                this.rotationYaw = (float) event.getToTransform().getYaw();
-//                this.rotationPitch = (float) event.getToTransform().getPitch();
                 this.shadow$setPositionAndUpdate(position.getX(), position.getY(), position.getZ());
             } else {
                 this.shadow$setPositionAndUpdate(initialX, initialY, initialZ);

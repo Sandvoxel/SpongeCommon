@@ -62,6 +62,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.common.SpongeCommon;
 import org.spongepowered.common.bridge.data.VanishableBridge;
+import org.spongepowered.common.bridge.entity.EntityBridge;
 import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
 import org.spongepowered.common.bridge.world.ServerWorldBridge;
 import org.spongepowered.common.bridge.world.WorldBridge;
@@ -141,90 +142,7 @@ public abstract class EntityMixin_API implements org.spongepowered.api.entity.En
     @Override
     public boolean setLocation(ServerLocation location) {
         Preconditions.checkNotNull(location, "The location was null!");
-        if (this.isRemoved()) {
-            return false;
-        }
-
-        // Don't allow setting locations to dimensions we have zero idea about
-        if (!((SpongeWorldManager) Sponge.getServer().getWorldManager()).isDimensionTypeRegistered(((ServerWorld) location.getWorld()).getDimension().getType())) {
-            return false;
-        }
-
-        try (final BasicPluginContext context = PluginPhase.State.TELEPORT.createPhaseContext(PhaseTracker.SERVER)) {
-            context.buildAndSwitch();
-
-            final MoveEntityEvent.Teleport event;
-
-            try (final CauseStackManager.StackFrame frame = PhaseTracker.getCauseStackManager().pushCauseFrame()) {
-                if (!frame.getCurrentContext().containsKey(EventContextKeys.TELEPORT_TYPE)) {
-                    frame.addContext(EventContextKeys.TELEPORT_TYPE, TeleportTypes.PLUGIN);
-                }
-
-                event = EntityUtil.postDisplaceEntityTeleportEvent((Entity) (Object) this, location);
-                if (event.isCancelled()) {
-                    return false;
-                }
-
-                location = ServerLocation.of(event.getToWorld(), event.getToPosition());
-            }
-
-            final List<Entity> passengers = ((Entity) (Object) this).getPassengers();
-
-            boolean isTeleporting = true;
-            boolean isChangingDimension = false;
-            if (!location.getWorld().getKey().equals(((org.spongepowered.api.world.server.ServerWorld) this.shadow$getEntityWorld()).getKey())) {
-                if ((Entity) (Object) this instanceof ServerPlayerEntity) {
-                    // Close open containers
-                    final ServerPlayerEntity serverPlayer = (ServerPlayerEntity) (Object) this;
-                    if (serverPlayer.openContainer != serverPlayer.container) {
-                        ((ServerPlayer) serverPlayer).closeInventory(); // Call API method to make sure we capture it
-                    }
-
-                    EntityUtil.changeDimension(serverPlayer, ((ServerWorld) location.getWorld()).getDimension().getType(), PlatformITeleporterBridge.NO_PORTAL);
-                } else {
-                    EntityUtil.changeDimension((Entity) (Object) this, ((ServerWorld) location.getWorld()).getDimension().getType(), PlatformITeleporterBridge.NO_PORTAL);
-                }
-
-                isChangingDimension = true;
-            }
-
-            final double distance = location.getPosition().distance(this.getPosition());
-
-            if (distance <= 4) {
-                isTeleporting = false;
-            }
-
-            if ((Entity) (Object) this instanceof ServerPlayerEntity && ((ServerPlayerEntity) (Entity) (Object) this).connection != null) {
-                final ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-
-                // No reason to attempt to load chunks unless we're teleporting
-                if (isTeleporting || isChangingDimension) {
-                    // Close open containers
-                    if (player.openContainer != player.container) {
-                        ((ServerPlayer) player).closeInventory(); // Call API method to make sure we capture it
-                    }
-
-                    // TODO - determine if this is right.
-                    ((ServerWorld) location.getWorld()).getChunkProvider()
-                            .forceChunk(new ChunkPos(location.getChunkPosition().getX(), location.getChunkPosition().getZ()), true);
-                }
-                player.connection.setPlayerLocation(location.getX(), location.getY(), location.getZ(), ((Entity) (Object) this).rotationYaw, ((Entity) (Object) this).rotationPitch);
-            } else {
-                this.shadow$setPosition(location.getPosition().getX(), location.getPosition().getY(), location.getPosition().getZ());
-            }
-
-            if (isTeleporting || isChangingDimension) {
-                // Re-attach passengers
-                for (final Entity passenger : passengers) {
-                    if (!((org.spongepowered.api.world.server.ServerWorld) passenger.getEntityWorld()).getKey()
-                            .equals(((org.spongepowered.api.world.server.ServerWorld) this.shadow$getEntityWorld()).getKey())) {
-                        ((org.spongepowered.api.entity.Entity) passenger).setLocation(location);
-                    }
-                    passenger.startRiding((Entity) (Object) this, true);
-                }
-            }
-            return true;
-        }
+        return ((EntityBridge) this).bridge$setLocation(location);
     }
 
     @Override

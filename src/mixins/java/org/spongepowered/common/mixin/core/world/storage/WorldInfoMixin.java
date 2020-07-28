@@ -46,8 +46,8 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.SerializationBehavior;
 import org.spongepowered.api.world.SerializationBehaviors;
 import org.spongepowered.api.world.dimension.DimensionTypes;
-import org.spongepowered.api.world.teleport.PortalAgentType;
-import org.spongepowered.api.world.teleport.PortalAgentTypes;
+import org.spongepowered.api.world.teleport.PortalLogic;
+import org.spongepowered.api.world.teleport.PortalLogicTypes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -100,7 +100,7 @@ public abstract class WorldInfoMixin implements ResourceKeyBridge, WorldInfoBrid
     private boolean impl$generateSpawnOnLoad;
     private boolean impl$generateBonusChest;
     private boolean impl$modCreated;
-    @Nullable private PortalAgentType impl$portalAgentType;
+    @Nullable private PortalLogic impl$portalLogic;
     @Nullable private SerializationBehavior impl$serializationBehavior;
 
     private final BiMap<Integer, UUID> impl$playerUniqueIdMap = HashBiMap.create();
@@ -297,11 +297,11 @@ public abstract class WorldInfoMixin implements ResourceKeyBridge, WorldInfoBrid
     }
 
     @Override
-    public PortalAgentType bridge$getPortalAgent() {
-        if (this.impl$portalAgentType == null) {
-            this.impl$portalAgentType = PortalAgentTypes.DEFAULT.get();
+    public PortalLogic bridge$getPortalAgent() {
+        if (this.impl$portalLogic == null) {
+            this.impl$portalLogic = PortalLogicTypes.DEFAULT.get();
         }
-        return this.impl$portalAgentType;
+        return this.impl$portalLogic;
     }
 
     @Override

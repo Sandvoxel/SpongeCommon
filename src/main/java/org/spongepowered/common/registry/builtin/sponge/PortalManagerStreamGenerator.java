@@ -24,37 +24,24 @@
  */
 package org.spongepowered.common.registry.builtin.sponge;
 
-import net.minecraft.world.Teleporter;
-import net.minecraft.world.dimension.EndDimension;
-import net.minecraft.world.server.ServerWorld;
 import org.spongepowered.api.ResourceKey;
-import org.spongepowered.api.world.teleport.PortalAgentType;
-import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
-import org.spongepowered.common.world.SpongePortalAgentType;
+import org.spongepowered.api.world.teleport.PortalLogic;
+import org.spongepowered.common.world.teleport.SpongePortalLogic;
 
 import java.util.stream.Stream;
 
-public final class PortalAgentTypeStreamGenerator {
+public final class PortalManagerStreamGenerator {
 
-    private static final PortalAgentType THE_END = new SpongePortalAgentType(ResourceKey.minecraft("default_the_end"), (Class<PlatformITeleporterBridge>) (Object) Teleporter.class);
-    private static final PortalAgentType THE_NETHER = new SpongePortalAgentType(ResourceKey.minecraft("default_the_nether"), (Class<PlatformITeleporterBridge>) (Object) Teleporter.class);
+    private static final PortalLogic THE_END = new SpongePortalLogic(ResourceKey.minecraft("default_the_end"));
+    private static final PortalLogic THE_NETHER = new SpongePortalLogic(ResourceKey.minecraft("default_the_nether"));
 
-    private PortalAgentTypeStreamGenerator() {
+    private PortalManagerStreamGenerator() {
     }
 
-    // TODO Minecraft 1.14 - Stop gap to get Vanilla portals working, does need a lot of thought...
-    public static PortalAgentType find(final ServerWorld world) {
-        if (world.dimension instanceof EndDimension) {
-            return PortalAgentTypeStreamGenerator.THE_END;
-        }
-
-        return PortalAgentTypeStreamGenerator.THE_NETHER;
-    }
-
-    public static Stream<PortalAgentType> stream() {
+    public static Stream<PortalLogic> stream() {
         return Stream.of(
-                PortalAgentTypeStreamGenerator.THE_END,
-                PortalAgentTypeStreamGenerator.THE_NETHER
+                PortalManagerStreamGenerator.THE_END,
+                PortalManagerStreamGenerator.THE_NETHER
         );
     }
 }

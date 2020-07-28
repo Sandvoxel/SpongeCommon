@@ -24,39 +24,28 @@
  */
 package org.spongepowered.common.event.tracking.phase.entity;
 
-import net.minecraft.world.server.ServerWorld;
-import org.spongepowered.api.entity.Entity;
-import org.spongepowered.common.bridge.world.ServerWorldBridge;
 import org.spongepowered.common.event.tracking.PhaseTracker;
 
-final class ChangingToDimensionState extends EntityPhaseState<DimensionChangeContext> {
+public final class TeleportPhaseState extends EntityPhaseState<TeleportContext> {
 
     @Override
-    public DimensionChangeContext createNewContext(final PhaseTracker tracker) {
-        return new DimensionChangeContext(this, tracker)
-            .addBlockCaptures()
-            .addEntityCaptures();
+    protected TeleportContext createNewContext(PhaseTracker tracker) {
+        return new TeleportContext(this, tracker)
+                .addBlockCaptures();
     }
 
     @Override
-    public boolean tracksBlockSpecificDrops(final DimensionChangeContext context) {
-        return true;
+    public boolean doesDenyChunkRequests(final TeleportContext context) {
+        return !context.isPlayer();
     }
 
     @Override
-    public boolean spawnEntityOrCapture(final DimensionChangeContext context, final Entity entity) {
-        final ServerWorld worldServer = context.getTargetWorld();
-        // Allowed to use the force spawn because it's the same "entity"
-        // This is the same "forceAddEntity" method that the TeleportCommand uses
-        worldServer.func_217460_e((net.minecraft.entity.Entity) entity);
-        return true;
-    }
-
-    @Override
-    public boolean doesDenyChunkRequests() {
+    public boolean tracksEntitySpecificDrops() {
         return false;
     }
 
-
-
+    @Override
+    public boolean doesCaptureEntityDrops(final TeleportContext context) {
+        return false;
+    }
 }

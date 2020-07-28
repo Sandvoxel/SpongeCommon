@@ -40,6 +40,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.ServerTickList;
+import net.minecraft.world.Teleporter;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.raid.Raid;
 import net.minecraft.world.raid.RaidManager;
@@ -49,7 +50,6 @@ import net.minecraft.world.storage.SaveHandler;
 import net.minecraft.world.storage.SessionLockException;
 import org.apache.logging.log4j.Level;
 import org.spongepowered.api.Server;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.SpongeEventFactory;
@@ -60,6 +60,7 @@ import org.spongepowered.api.world.ChunkRegenerateFlag;
 import org.spongepowered.api.world.ServerLocation;
 import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.api.world.storage.WorldStorage;
+import org.spongepowered.api.world.teleport.PortalManager;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -93,6 +94,10 @@ import javax.annotation.Nullable;
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin_API extends WorldMixin_API<org.spongepowered.api.world.server.ServerWorld> implements org.spongepowered.api.world.server.ServerWorld {
 
+    @Shadow @Final private ServerTickList<Block> pendingBlockTicks;
+    @Shadow @Final private ServerTickList<Fluid> pendingFluidTicks;
+    @Shadow @Final private Int2ObjectMap<Entity> entitiesById;
+
     @Shadow public abstract void shadow$save(@Nullable IProgressUpdate p_217445_1_, boolean p_217445_2_, boolean p_217445_3_) throws SessionLockException;
     @Shadow public abstract boolean shadow$addEntity(Entity p_217376_1_);
     @Shadow public abstract void shadow$onChunkUnloading(Chunk p_217466_1_);
@@ -104,11 +109,7 @@ public abstract class ServerWorldMixin_API extends WorldMixin_API<org.spongepowe
     @Shadow public abstract List<ServerPlayerEntity> shadow$getPlayers();
     @Shadow public abstract RaidManager shadow$getRaids();
     @Nullable @Shadow public abstract Raid shadow$findRaid(BlockPos p_217475_1_);
-
-    @Shadow @Final private ServerTickList<Block> pendingBlockTicks;
-    @Shadow @Final private ServerTickList<Fluid> pendingFluidTicks;
-
-    @Shadow @Final private Int2ObjectMap<Entity> entitiesById;
+    @Shadow public abstract Teleporter shadow$getDefaultTeleporter();
 
     // World
     @Override
@@ -188,6 +189,11 @@ public abstract class ServerWorldMixin_API extends WorldMixin_API<org.spongepowe
     public boolean unloadChunk(final org.spongepowered.api.world.chunk.Chunk chunk) {
         this.shadow$onChunkUnloading((Chunk) chunk);
         return true;
+    }
+
+    @Override
+    public PortalManager getPortalManager() {
+        return (PortalManager) (Object) this.shadow$getDefaultTeleporter();
     }
 
     // TODO move to bridge?

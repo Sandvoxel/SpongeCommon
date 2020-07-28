@@ -43,18 +43,4 @@ public abstract class EntityMixin_Vanilla {
 
     @Shadow public abstract World shadow$getEntityWorld();
     @Shadow @Nullable public abstract MinecraftServer shadow$getServer();
-
-    /**
-     * @author Zidane
-     * @reason Call to EntityUtil to handle dimension changes
-     */
-    @Nullable
-    @Overwrite
-    public Entity changeDimension(DimensionType destination) {
-        if (this.shadow$getEntityWorld().isRemote || this.removed) {
-            return null;
-        }
-
-        return EntityUtil.changeDimension((Entity) (Object) this, destination, (PlatformITeleporterBridge) this.shadow$getServer().getWorld(destination).getDefaultTeleporter());
-    }
 }

@@ -24,23 +24,35 @@
  */
 package org.spongepowered.common.mixin.core.entity.player;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.ServerPlayNetHandler;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.CauseStackManager;
+import org.spongepowered.api.event.cause.EventContextKeys;
+import org.spongepowered.api.event.cause.entity.teleport.TeleportTypes;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.user.UserManager;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.common.SpongeCommon;
 import org.spongepowered.common.bridge.entity.player.ServerPlayerEntityBridge;
 import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import org.spongepowered.common.bridge.world.PlatformITeleporterBridge;
+import org.spongepowered.common.entity.EntityUtil;
+import org.spongepowered.common.event.tracking.PhaseTracker;
+import org.spongepowered.common.event.tracking.phase.entity.EntityPhase;
+import org.spongepowered.common.event.tracking.phase.entity.TeleportContext;
 import org.spongepowered.common.user.SpongeUserManager;
 
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 // See also: SubjectMixin_API and SubjectMixin
 @Mixin(ServerPlayerEntity.class)
@@ -115,5 +127,26 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
     @Override
     public void bridge$setPacketItem(final ItemStack itemstack) {
         this.impl$packetItem = itemstack;
+    }
+
+    /**
+     * @author Zidane
+     * @reason Call to EntityUtil to handle dimension changes
+     */
+    @Nullable
+    @Overwrite
+    public Entity changeDimension(DimensionType destination) {
+        if (this.shadow$getEntityWorld().isRemote || this.removed) {
+            return null;
+        }
+
+        try (final TeleportContext ignored = EntityPhase.State.TELEPORT.createPhaseContext(PhaseTracker.SERVER).player().worldChange().buildAndSwitch()) {
+
+            // TODO Need to create a StackFrame in NetherPortalBlock, EndPortalBlock. This will do for now.
+            try (final CauseStackManager.StackFrame frame = PhaseTracker.getCauseStackManager().pushCauseFrame()) {
+                frame.addContext(EventContextKeys.TELEPORT_TYPE, TeleportTypes.PORTAL);
+                return EntityUtil.changeDimension((ServerPlayerEntity) (Object) this, destination, (PlatformITeleporterBridge) this.shadow$getServer().getWorld(destination).getDefaultTeleporter());
+            }
+        }
     }
 }

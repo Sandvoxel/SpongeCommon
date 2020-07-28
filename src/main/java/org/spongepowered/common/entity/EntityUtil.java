@@ -75,6 +75,7 @@ import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.PhaseTracker;
 import org.spongepowered.common.hooks.PlatformHooks;
 import org.spongepowered.common.item.util.ItemStackUtil;
+import org.spongepowered.common.util.VecHelper;
 import org.spongepowered.math.vector.Vector3d;
 
 import javax.annotation.Nullable;
@@ -104,9 +105,12 @@ public final class EntityUtil {
     }
 
     public static Entity changeDimension(final Entity entity, final DimensionType dimensionType, final PlatformITeleporterBridge teleporter) {
+
+        // Sponge Start - Call platform event hook before changing dimensions
         if (!PlatformHooks.getInstance().getEventHooks().callChangeDimensionPre(entity, dimensionType)) {
             return null;
         }
+        // Sponge End
 
         final ServerWorld fromWorld = (ServerWorld) entity.world;
         fromWorld.getProfiler().startSection("changeDimension");
@@ -122,16 +126,21 @@ public final class EntityUtil {
 
         entity.world.getProfiler().startSection("reposition");
 
+        // Sponge Start - Use platform teleporter hook
         final Entity teleportedEntity = teleporter.bridge$placeEntity(entity, fromWorld, toWorld, entity.rotationYaw, spawnInPortal -> {
             Vec3d vec3d = entity.getMotion();
             float f = 0.0F;
             BlockPos blockpos;
+            // Sponge Start - Check actual dimension, not just types (we can have multiple types of the same dimension)
             if (fromWorld.getDimension() instanceof EndDimension && toWorld.getDimension() instanceof OverworldDimension) {
                 blockpos = toWorld.getHeight(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, toWorld.getSpawnPoint());
             } else if (toWorld.dimension instanceof EndDimension) {
                 blockpos = toWorld.getSpawnCoordinate();
+            // Sponge End
             } else {
+                // Sponge Start - Use platform move factor instead of Vanilla
                 final double movementFactor = ((PlatformDimensionBridge) fromWorld.getDimension()).bridge$getMovementFactor() / ((PlatformDimensionBridge) toWorld.getDimension()).bridge$getMovementFactor();
+                // Sponge End
                 double d0 = entity.posX * movementFactor;
                 double d1 = entity.posZ * movementFactor;
 
@@ -167,18 +176,26 @@ public final class EntityUtil {
             return newEntity;
         });
 
-        // Teleportation failed, bail and let it live to try another day
+        // Sponge End
+
+        // Sponge Start - Don't always remove the entity is teleport failed
         if (teleportedEntity == null) {
             return null;
         }
+        // Sponge End
 
+        // Sponge Start - Have the platform handle removing the entity from the world
         ((PlatformEntityBridge) entity).bridge$remove(false);
+        // Sponge End
+
         fromWorld.getProfiler().endSection();
         fromWorld.resetUpdateEntityTick();
         toWorld.resetUpdateEntityTick();
         fromWorld.getProfiler().endSection();
 
+        // Sponge Start - Call platform event hook after changing dimensions
         PlatformHooks.getInstance().getEventHooks().callChangeDimensionPost(entity, fromDimensionType, dimensionType);
+        // Sponge End
 
         return teleportedEntity;
     }
@@ -191,6 +208,8 @@ public final class EntityUtil {
             return player;
         }
         // Sponge End
+
+        final Vec3d previousPosition = player.getPositionVec();
 
         ((ServerPlayerEntityAccessor) player).accessor$setInvulnerableDimensionChange(true);
         final ServerWorld fromWorld = (ServerWorld) player.getEntityWorld();
@@ -242,7 +261,7 @@ public final class EntityUtil {
             d2 *= moveFactor;
             // Sponge Start - Don't assume Vanilla dimension types, check actual dimension instances
             if (fromWorld.getDimension() instanceof OverworldDimension && toWorld.getDimension() instanceof NetherDimension) {
-                ((ServerPlayerEntityAccessor) player).accessor$setEnteredNetherPosition(player.getPositionVec());
+                ((ServerPlayerEntityAccessor) player).accessor$setEnteredNetherPosition(previousPosition);
             } else if (fromWorld.getDimension() instanceof OverworldDimension && toWorld.getDimension() instanceof EndDimension) {
             // Sponge End
                 BlockPos blockpos = toWorld.getSpawnCoordinate();
@@ -262,6 +281,13 @@ public final class EntityUtil {
             double d6 = Math.min(2.9999872E7D, toWorld.getWorldBorder().maxZ() - 16.0D);
             d0 = MathHelper.clamp(d0, d7, d5);
             d2 = MathHelper.clamp(d2, d4, d6);
+
+            final MoveEntityEvent.Teleport.Portal event =
+                    SpongeEventFactory.createMoveEntityEventTeleportPortal(PhaseTracker.getCauseStackManager().getCurrentCause(),
+                            VecHelper.toVector3d(previousPosition), new Vector3d(d0, d1, d2),
+                            (org.spongepowered.api.world.server.ServerWorld) fromWorld, (org.spongepowered.api.world.server.ServerWorld) toWorld,
+                            (org.spongepowered.api.entity.Entity) player, (PortalManager) (Object) teleporter, true, true);
+
             player.setLocationAndAngles(d0, d1, d2, f1, f);
             if (dimensionType == DimensionType.THE_END) {
                 int i = MathHelper.floor(((EntityAccessor) player).accessor$getPosX());
@@ -314,7 +340,7 @@ public final class EntityUtil {
         ((ServerPlayerEntityAccessor) player).accessor$setLastHealth(-1.0f);
         ((ServerPlayerEntityAccessor) player).accessor$setLastFoodLevel(-1);
 
-        // Sponge Start - Call platform event hook before changing dimensions
+        // Sponge Start - Call platform event hook after changing dimensions
         PlatformHooks.getInstance().getEventHooks().callChangeDimensionPost(player, fromDimensionType, dimensionType);
         // Sponge End
         return player;
